@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar sinistra -->
+        <div class="sidebar">
+            <div class="sidebar-controls">
+                <button class="control-btn"><i class="fas fa-search"></i> Cerca</button>
+            </div>
+            
+            <div class="library-controls">
+                <button class="add-library-btn" id="addLibraryBtn">
+                    <i class="fas fa-plus"></i> Nuova Libreria
+                </button>
+            </div>
+            
+            <div class="library-list" id="libraryList">
+                <!-- Le librerie verranno aggiunte dinamicamente qui -->
+            </div>
+        </div>
+
+        <!-- Area principale -->
+        <div class="main-content">
+            <!-- Header controlli -->
+            <div class="top-controls">
+                <button class="control-btn" id="addButton"><i class="fas fa-plus"></i></button>
+                <button class="control-btn"><i class="fas fa-cog"></i></button>
+                <button class="control-btn"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Titolo principale -->
+            <h1 class="main-title">DIGITAL LIBRARY</h1>
+
+            <!-- Griglia dei libri -->
+            <div class="books-grid">
+                <!-- Prima riga -->
+                <div class="book-row">
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                </div>
+                <!-- Seconda riga -->
+                <div class="book-row">
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                </div>
+                <!-- Terza riga -->
+                <div class="book-row">
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                    <div class="book-card"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form di inserimento libro (inizialmente nascosto) -->
+        <div class="add-book-form" id="addBookForm">
+            <div class="form-container">
+                <h2>INSERISCI NUOVO LIBRO</h2>
+                <form>
+                    <div class="form-group">
+                        <label>TITOLO</label>
+                        <input type="text" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>CATEGORIA</label>
+                        <input type="text" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>AUTORE (cognome)</label>
+                        <input type="text" class="form-input">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Form per la creazione della libreria (inizialmente nascosto) -->
+        <div class="library-form" id="libraryForm">
+            <div class="form-container">
+                <h2>NUOVA LIBRERIA</h2>
+                <form id="newLibraryForm">
+                    <div class="form-group">
+                        <label>Nome Libreria</label>
+                        <input type="text" class="form-input" id="libraryName" required>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="submit" class="submit-btn">Crea</button>
+                        <button type="button" class="cancel-btn" id="cancelLibrary">Annulla</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
