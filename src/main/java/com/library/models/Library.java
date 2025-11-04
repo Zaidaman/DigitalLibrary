@@ -1,20 +1,11 @@
 package com.library.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Library {
-    private String name;
-    private List<Book> books = new ArrayList<>();
+    private String Name;
 
-    public Library(String name) {
-        this.name = name;
+    public Library(String Name) {
+        this.Name = Name;
     }
 
-    public String getName() { return name; }
-    public List<Book> getBooks() { return books; }
-
-    public void addBook(Book book) {
-        books.add(book);
-    }
+    public String getName() { return Name; }
 }

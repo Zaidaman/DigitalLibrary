@@ -9,9 +9,11 @@ repositories {
 }
 
 dependencies {
+    implementation 'mysql:mysql-connector-java:8.0.33'
     implementation 'org.openjfx:javafx-controls:21'
     implementation 'org.openjfx:javafx-fxml:21'
     implementation 'org.openjfx:javafx-web:21'
+    
 
     // PDF support
     implementation 'org.apache.pdfbox:pdfbox:3.0.2'
