@@ -2,6 +2,9 @@ package com.library.controllers;
 
 import java.io.File;
 
+import com.library.models.Library;
+import com.library.models.LibraryDAO;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -19,7 +22,10 @@ public class HomeController {
 
     @FXML
     public void initialize() {
-        libraryList.getItems().addAll("Fantasy", "Scienza", "Romanzi");
+        // Carica le librerie dal database
+        for (Library lib : LibraryDAO.getAllLibraries()) {
+            libraryList.getItems().add(lib.getName());
+        }
         libraryList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null)
                 openLibrary(newVal);
