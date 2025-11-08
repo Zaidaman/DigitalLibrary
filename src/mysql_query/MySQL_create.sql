@@ -7,7 +7,7 @@ Username varchar(20) not null unique,
 UserPass varchar(15) not null
 );
 
-create table if not exists `Library` (
+create table if not exists Libraries (
 IdLibrary int auto_increment primary key,
 LibName varchar(20) not null unique,
 IdUser int not null default 1,
@@ -34,7 +34,7 @@ AnnoPub int,
 BookFile mediumblob not null,
 IdLibrary int not null default 1,
 foreign key(IdAuthor) references Author(IdAuthor),
-foreign key(IdLibrary) references `Library`(IdLibrary)
+foreign key(IdLibrary) references Libraries(IdLibrary)
 );
 
 create table if not exists BookGenre (
