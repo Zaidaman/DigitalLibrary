@@ -32,9 +32,7 @@ Title varchar(50) not null,
 IdAuthor int not null default 1,
 AnnoPub int,
 BookFile mediumblob not null,
-IdLibrary int not null default 1,
-foreign key(IdAuthor) references Author(IdAuthor),
-foreign key(IdLibrary) references Libraries(IdLibrary)
+foreign key(IdAuthor) references Author(IdAuthor)
 );
 
 create table if not exists BookGenre (
@@ -43,4 +41,12 @@ IdGenre int not null,
 primary key(IdBook, IdGenre),
 foreign key(IdBook) references Book(IdBook),
 foreign key(IdGenre) references Genre(IdGenre)
+);
+
+create table if not exists BookLib (
+IdBook int not null,
+IdLibrary int not null,
+primary key(IdBook, IdLibrary),
+foreign key(IdBook) references Book(IdBook),
+foreign key(IdLibrary) references Libraries(IdLibrary)
 );
