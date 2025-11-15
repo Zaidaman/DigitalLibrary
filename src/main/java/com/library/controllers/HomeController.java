@@ -2,9 +2,6 @@ package com.library.controllers;
 
 import java.io.File;
 
-import com.library.models.Library;
-import com.library.models.LibraryDAO;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -22,19 +19,30 @@ public class HomeController {
 
     @FXML
     public void initialize() {
-        // Carica le librerie dal database
-        for (Library lib : LibraryDAO.getAllLibraries()) {
-            libraryList.getItems().add(lib.getName());
-        }
-        libraryList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null)
-                openLibrary(newVal);
-        });
+        loadLibraries();
+        loadBooks();
     }
 
-    private void openLibrary(String libraryName) {
+    private void loadLibraries() {
+        com.library.dao.LibrariesDAO librariesDAO = new com.library.dao.LibrariesDAO();
+        libraryList.getItems().clear();
+        for (com.library.models.Libraries lib : librariesDAO.findAll()) {
+            libraryList.getItems().add(lib.getLibName());
+        }
+    }
+
+    private void loadBooks() {
+        com.library.dao.BookDAO bookDAO = new com.library.dao.BookDAO();
+        java.util.List<com.library.models.Book> books = bookDAO.findAll();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Libri presenti nel DB:\n");
+        for (com.library.models.Book book : books) {
+            sb.append("- ").append(book.getTitle()).append("\n");
+        }
+        javafx.scene.control.Label booksLabel = new javafx.scene.control.Label(sb.toString());
+        booksLabel.setStyle("-fx-font-size: 16px;");
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(new javafx.scene.control.Label("Libri nella libreria: " + libraryName));
+        contentArea.getChildren().add(booksLabel);
     }
 
     // Lettura file (esempio semplice)
