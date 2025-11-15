@@ -1,12 +1,9 @@
 package com.library.controllers;
 
-import java.io.File;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.StackPane;
-import javafx.scene.web.WebView;
 
 public class HomeController {
 
@@ -43,35 +40,5 @@ public class HomeController {
         booksLabel.setStyle("-fx-font-size: 16px;");
         contentArea.getChildren().clear();
         contentArea.getChildren().add(booksLabel);
-    }
-
-    // Lettura file (esempio semplice)
-    private void openBook(File file) {
-        String ext = getFileExtension(file.getName());
-        contentArea.getChildren().clear();
-
-        switch (ext) {
-            case "txt":
-            case "html":
-                WebView webView = new WebView();
-                webView.getEngine().load(file.toURI().toString());
-                contentArea.getChildren().add(webView);
-                break;
-            case "pdf":
-                contentArea.getChildren().add(new javafx.scene.control.Label("Apertura PDF: " + file.getName()));
-                // (Puoi integrare Apache PDFBox qui)
-                break;
-            case "epub":
-                contentArea.getChildren().add(new javafx.scene.control.Label("Apertura EPUB: " + file.getName()));
-                // (Integrazione epublib qui)
-                break;
-            default:
-                contentArea.getChildren().add(new javafx.scene.control.Label("Formato non supportato"));
-        }
-    }
-
-    private String getFileExtension(String fileName) {
-        int lastDot = fileName.lastIndexOf('.');
-        return (lastDot > 0) ? fileName.substring(lastDot + 1).toLowerCase() : "";
     }
 }
