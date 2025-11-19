@@ -12,6 +12,17 @@ import com.library.models.LibUser;
 import com.library.utils.DbUtils;
 
 public class LibUserDAO {
+        public void insert(com.library.models.LibUser user) {
+            String sql = "INSERT INTO LibUser (Username, UserPass) VALUES (?, ?)";
+            try (java.sql.Connection conn = com.library.utils.DbUtils.getConnection();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, user.getUsername());
+                ps.setString(2, user.getUserPass());
+                ps.executeUpdate();
+            } catch (java.sql.SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     public List<LibUser> findAll() {
         List<LibUser> users = new ArrayList<>();
         String sql = "SELECT IdUser, Username, UserPass FROM LibUser";

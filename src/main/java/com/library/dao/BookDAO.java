@@ -12,6 +12,19 @@ import com.library.models.Book;
 import com.library.utils.DbUtils;
 
 public class BookDAO {
+        public void insert(Book book, int idAuthor, int annoPub) {
+            String sql = "INSERT INTO Book (Title, IdAuthor, AnnoPub, BookFile) VALUES (?, ?, ?, ?)";
+            try (Connection conn = DbUtils.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, book.getTitle());
+                ps.setInt(2, idAuthor);
+                ps.setInt(3, annoPub);
+                ps.setBytes(4, book.getFile());
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     public List<Book> findAll() {
         List<Book> books = new ArrayList<>();
         String sql = "SELECT IdBook, Title, IdAuthor, AnnoPub, BookFile FROM Book";

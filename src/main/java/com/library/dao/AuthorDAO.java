@@ -12,6 +12,18 @@ import com.library.models.Author;
 import com.library.utils.DbUtils;
 
 public class AuthorDAO {
+        public void insert(com.library.models.Author author) {
+            String sql = "INSERT INTO Author (AuthorName, MidName, Surname) VALUES (?, ?, ?)";
+            try (java.sql.Connection conn = com.library.utils.DbUtils.getConnection();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, author.getAuthorName());
+                ps.setString(2, author.getMidName());
+                ps.setString(3, author.getSurname());
+                ps.executeUpdate();
+            } catch (java.sql.SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     public List<Author> findAll() {
         List<Author> authors = new ArrayList<>();
         String sql = "SELECT IdAuthor, AuthorName, MidName, Surname FROM Author";

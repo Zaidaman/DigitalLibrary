@@ -12,6 +12,16 @@ import com.library.models.Genre;
 import com.library.utils.DbUtils;
 
 public class GenreDAO {
+        public void insert(com.library.models.Genre genre) {
+            String sql = "INSERT INTO Genre (GenreName) VALUES (?)";
+            try (java.sql.Connection conn = com.library.utils.DbUtils.getConnection();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, genre.getGenreName());
+                ps.executeUpdate();
+            } catch (java.sql.SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     public List<Genre> findAll() {
         List<Genre> genres = new ArrayList<>();
         String sql = "SELECT IdGenre, GenreName FROM Genre";
