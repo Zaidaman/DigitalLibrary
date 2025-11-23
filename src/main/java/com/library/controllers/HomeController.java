@@ -18,6 +18,10 @@ import javax.swing.*;
 import org.icepdf.ri.common.SwingController;
 import org.icepdf.ri.common.SwingViewBuilder;
 
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class HomeController {
@@ -93,7 +97,7 @@ public class HomeController {
             for (Book b : books) {
                 booksList.getItems().add(b.getTitle());
             }
-            showDefaultMessage(); // inizialmente messaggio di base
+            showDefaultMessage(); // messaggio di base
         }
     }
 
@@ -117,10 +121,10 @@ public class HomeController {
         booksList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.equals("Nessun libro presente in questa libreria.")) {
                 BookDAO bookDAO = new BookDAO();
-                Book book = bookDAO.findByTitle(newVal); // assicurati che restituisca filePath
+                Book book = bookDAO.findByTitle(newVal); // restituisce filePath relativo
 
                 if (book != null && book.getFilePath() != null && !book.getFilePath().isEmpty()) {
-                    showPdfFromPath(book.getFilePath());
+                    showPdfFromResource(book.getFilePath());
                 } else {
                     showDefaultMessage();
                 }
@@ -136,14 +140,26 @@ public class HomeController {
         contentArea.getChildren().setAll(defaultLabel);
     }
 
-    private void showPdfFromPath(String pdfPath) {
+    private void showPdfFromResource(String resourcePath) {
         try {
+            // Carica la risorsa dal classpath
+            InputStream pdfStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
+            if (pdfStream == null) {
+                System.out.println("PDF non trovato: " + resourcePath);
+                showDefaultMessage();
+                return;
+            }
+
+            // Crea un file temporaneo leggibile da IcePDF
+            File tempFile = File.createTempFile("temp_pdf_", ".pdf");
+            tempFile.deleteOnExit();
+            Files.copy(pdfStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            // IcePDF
             SwingController controller = new SwingController();
             SwingViewBuilder factory = new SwingViewBuilder(controller);
             JPanel viewerPanel = factory.buildViewerPanel();
-
-            // apri PDF dal file system
-            controller.openDocument(pdfPath);
+            controller.openDocument(tempFile.getAbsolutePath());
 
             SwingNode swingNode = new SwingNode();
             swingNode.setContent(viewerPanel);

@@ -19,9 +19,9 @@ insert into libraries (LibName) values
 ('Test Library');
 
 insert into book (Title, IdAuthor, AnnoPub, BookFile) values
-('I promessi sposi', 1, 1840, 'src/main/resources/pdf/I promessi sposi.pdf'),
-('The hobbit', 2, 1937, 'src/main/resources/pdf/The Hobbit.pdf'),
-('The war of the worlds', 3, 1898, 'src/main/resources/pdf/The war of the worlds.pdf');
+('I promessi sposi', 1, 1840, 'pdf/I promessi sposi.pdf'),
+('The hobbit', 2, 1937, 'pdf/The Hobbit.pdf'),
+('The war of the worlds', 3, 1898, 'pdf/The war of the worlds.pdf');
 
 insert into bookgenre (IdBook, IdGenre) values
 ('1','3'),
