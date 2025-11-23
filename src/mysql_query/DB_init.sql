@@ -19,9 +19,9 @@ insert into libraries (LibName, IdUser) values
 ('Test Library', 1);
 
 insert into book (Title, IdAuthor, AnnoPub, BookFile) values
-('I promessi sposi', 1, 1840, load_file('C:/ProgramData/MySQL/MySQL Server 9.4/Uploads/I promessi sposi.pdf')),
-('The hobbit', 2, 1937, load_file('C:/ProgramData/MySQL/MySQL Server 9.4/Uploads/The Hobbit.pdf')),
-('The war of the worlds', 3, 1898, load_file('C:/ProgramData/MySQL/MySQL Server 9.4/Uploads/The war of the worlds.pdf'));
+('I promessi sposi', 1, 1840, 'C:/ProgramData/MySQL/MySQL Server 9.4/Uploads/I promessi sposi.pdf'),
+('The hobbit', 2, 1937, 'C:/ProgramData/MySQL/MySQL Server 9.4/Uploads/The Hobbit.pdf'),
+('The war of the worlds', 3, 1898, 'C:/ProgramData/MySQL/MySQL Server 9.4/Uploads/The war of the worlds.pdf');
 
 insert into bookgenre (IdBook, IdGenre) values
 ('1','3'),

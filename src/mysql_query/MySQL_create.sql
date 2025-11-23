@@ -31,7 +31,7 @@ IdBook int auto_increment primary key,
 Title varchar(50) not null,
 IdAuthor int not null default 1,
 AnnoPub int,
-BookFile mediumblob not null,
+BookFile varchar(400) not null,
 foreign key(IdAuthor) references Author(IdAuthor)
 );
 

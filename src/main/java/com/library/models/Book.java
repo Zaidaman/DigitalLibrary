@@ -5,21 +5,21 @@ public class Book {
     private String Title;
     private String Author;
     private String Genre;
-    private byte[] File;
+    private String filePath;
     private int IdLibrary;
 
 
-    public Book(String title, String author, String genre, byte[] File, int idLibrary) {
+    public Book(String title, String author, String genre, String filePath, int idLibrary) {
         this.Title = title;
         this.Author = author;
         this.Genre = genre;
-        this.File = File;
+        this.filePath = filePath;
         this.IdLibrary = idLibrary;
     }
 
     public String getTitle() { return Title; }
     public String getAuthor() { return Author; }
     public String getGenre() { return Genre; }
-    public byte[] getFile() { return File; }
+    public String getFilePath() { return filePath; }
     public int getIdLibrary() { return IdLibrary; }
 }

@@ -5,26 +5,34 @@ plugins {
 
 repositories {
     mavenCentral()
-    jcenter() // aggiunto per epublib
+    jcenter() // per epublib
 }
 
 dependencies {
     implementation 'mysql:mysql-connector-java:8.0.33'
+
+    // JavaFX
     implementation 'org.openjfx:javafx-controls:21'
     implementation 'org.openjfx:javafx-fxml:21'
     implementation 'org.openjfx:javafx-web:21'
-    
+    implementation 'org.openjfx:javafx-swing:21'  // <-- stesso numero versione
 
     // PDF support
     implementation 'org.apache.pdfbox:pdfbox:3.0.2'
 
     // EPUB support
     implementation files('libs/epublib-core-3.1.jar')
+
+    // IcePDF Viewer
+    implementation files('libs/icepdf-viewer-6.2.2.jar')
+    
+    // IcePDF Core
+    implementation files('libs/icepdf-core-6.2.2.jar')
 }
 
 javafx {
     version = "21"
-    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web' ]
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing' ] // <-- aggiunto swing
 }
 
 application {

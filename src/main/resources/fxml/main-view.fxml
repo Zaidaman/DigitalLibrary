@@ -26,7 +26,7 @@
                 <Label text="Libri della Libreria" style="-fx-font-size: 18px;" />
                 <ListView fx:id="booksList"/>
             </VBox>
-            
+
             <!-- Toggle Panel -->
             <VBox alignment="CENTER"
                 style="-fx-background-color: #bdc3c7; -fx-padding: 5;">
@@ -36,7 +36,6 @@
             </VBox>
         </HBox>
     </left>
-
 
     <!-- Area centrale -->
     <center>

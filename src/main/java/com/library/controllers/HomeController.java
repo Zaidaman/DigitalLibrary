@@ -6,11 +6,17 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
+import javafx.embed.swing.SwingNode;
 
 import com.library.dao.BookDAO;
 import com.library.dao.LibrariesDAO;
 import com.library.models.Book;
 import com.library.models.Libraries;
+
+import javax.swing.*;
+
+import org.icepdf.ri.common.SwingController;
+import org.icepdf.ri.common.SwingViewBuilder;
 
 import java.util.List;
 
@@ -31,19 +37,22 @@ public class HomeController {
     @FXML
     private Button toggleBooksBtn;
 
-    private boolean booksPanelVisible = true; // stato iniziale
+    private boolean booksPanelVisible = true;
 
     @FXML
     public void initialize() {
         loadLibraries();
         setupLibrarySelection();
 
-        // pannello libri inizialmente nascosto finché non selezioni una libreria
+        // pannello libri nascosto inizialmente
         booksPanel.setVisible(false);
         booksPanel.setManaged(false);
-        booksPanelVisible = true; // lo consideriamo pronto ad aprirsi quando selezioniamo libreria
+        booksPanelVisible = true;
 
         setupToggleButton();
+        setupBookSelection();
+
+        showDefaultMessage();
     }
 
     private void loadLibraries() {
@@ -70,43 +79,80 @@ public class HomeController {
         BookDAO bookDAO = new BookDAO();
         List<Book> books = bookDAO.findByLibraryId(library.getIdLibrary());
 
-        // Mostra il pannello dei libri
+        // mostra pannello libri
         booksPanel.setVisible(true);
         booksPanel.setManaged(true);
         booksPanelVisible = true;
         toggleBooksBtn.setText("⮜");
 
-        // Popola la lista dei libri
         booksList.getItems().clear();
         if (books.isEmpty()) {
             booksList.getItems().add("Nessun libro presente in questa libreria.");
+            showDefaultMessage();
         } else {
             for (Book b : books) {
                 booksList.getItems().add(b.getTitle());
             }
+            showDefaultMessage(); // inizialmente messaggio di base
         }
-
-        // Aggiorna area centrale con titolo informativo
-        Label info = new Label("Libri della libreria: " + library.getLibName());
-        info.setStyle("-fx-font-size: 18px;");
-        contentArea.getChildren().setAll(info);
     }
 
     private void setupToggleButton() {
         toggleBooksBtn.setOnAction(e -> {
             if (booksPanelVisible) {
-                // Nascondi pannello libri
                 booksPanel.setVisible(false);
                 booksPanel.setManaged(false);
-                toggleBooksBtn.setText("⮞"); // freccia verso destra
+                toggleBooksBtn.setText("⮞");
                 booksPanelVisible = false;
             } else {
-                // Mostra pannello libri
                 booksPanel.setVisible(true);
                 booksPanel.setManaged(true);
-                toggleBooksBtn.setText("⮜"); // freccia verso sinistra
+                toggleBooksBtn.setText("⮜");
                 booksPanelVisible = true;
             }
         });
+    }
+
+    private void setupBookSelection() {
+        booksList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.equals("Nessun libro presente in questa libreria.")) {
+                BookDAO bookDAO = new BookDAO();
+                Book book = bookDAO.findByTitle(newVal); // assicurati che restituisca filePath
+
+                if (book != null && book.getFilePath() != null && !book.getFilePath().isEmpty()) {
+                    showPdfFromPath(book.getFilePath());
+                } else {
+                    showDefaultMessage();
+                }
+            } else {
+                showDefaultMessage();
+            }
+        });
+    }
+
+    private void showDefaultMessage() {
+        Label defaultLabel = new Label("Benvenuto nella tua Libreria Digitale!");
+        defaultLabel.setStyle("-fx-font-size: 20px;");
+        contentArea.getChildren().setAll(defaultLabel);
+    }
+
+    private void showPdfFromPath(String pdfPath) {
+        try {
+            SwingController controller = new SwingController();
+            SwingViewBuilder factory = new SwingViewBuilder(controller);
+            JPanel viewerPanel = factory.buildViewerPanel();
+
+            // apri PDF dal file system
+            controller.openDocument(pdfPath);
+
+            SwingNode swingNode = new SwingNode();
+            swingNode.setContent(viewerPanel);
+
+            contentArea.getChildren().setAll(swingNode);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showDefaultMessage();
+        }
     }
 }
