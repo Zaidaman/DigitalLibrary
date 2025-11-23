@@ -15,8 +15,8 @@ insert into genre (GenreName) values
 insert into libuser (Username, Userpass) values
 ('admin', 12345);
 
-insert into libraries (LibName, IdUser) values
-('Test Library', 1);
+insert into libraries (LibName) values
+('Test Library');
 
 insert into book (Title, IdAuthor, AnnoPub, BookFile) values
 ('I promessi sposi', 1, 1840, 'src/main/resources/pdf/I promessi sposi.pdf'),
@@ -32,3 +32,6 @@ insert into booklib (IdBook, IdLibrary) values
 ('1','1'),
 ('2','1'),
 ('3','1');
+
+insert into libaccess (IdUser, IdLibrary) values
+('1','1');
