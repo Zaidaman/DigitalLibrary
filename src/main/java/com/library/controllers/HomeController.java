@@ -1,44 +1,112 @@
 package com.library.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
+
+import com.library.dao.BookDAO;
+import com.library.dao.LibrariesDAO;
+import com.library.models.Book;
+import com.library.models.Libraries;
+
+import java.util.List;
 
 public class HomeController {
 
     @FXML
     private ListView<String> libraryList;
+
     @FXML
-    private Button addLibraryBtn;
+    private VBox booksPanel;
+
+    @FXML
+    private ListView<String> booksList;
+
     @FXML
     private StackPane contentArea;
 
     @FXML
+    private Button toggleBooksBtn;
+
+    private boolean booksPanelVisible = true; // stato iniziale
+
+    @FXML
     public void initialize() {
         loadLibraries();
-        loadBooks();
+        setupLibrarySelection();
+
+        // pannello libri inizialmente nascosto finché non selezioni una libreria
+        booksPanel.setVisible(false);
+        booksPanel.setManaged(false);
+        booksPanelVisible = true; // lo consideriamo pronto ad aprirsi quando selezioniamo libreria
+
+        setupToggleButton();
     }
 
     private void loadLibraries() {
-        com.library.dao.LibrariesDAO librariesDAO = new com.library.dao.LibrariesDAO();
+        LibrariesDAO librariesDAO = new LibrariesDAO();
         libraryList.getItems().clear();
-        for (com.library.models.Libraries lib : librariesDAO.findAll()) {
+        for (Libraries lib : librariesDAO.findAll()) {
             libraryList.getItems().add(lib.getLibName());
         }
     }
 
-    private void loadBooks() {
-        com.library.dao.BookDAO bookDAO = new com.library.dao.BookDAO();
-        java.util.List<com.library.models.Book> books = bookDAO.findAll();
-        StringBuilder sb = new StringBuilder();
-        sb.append("Libri presenti nel DB:\n");
-        for (com.library.models.Book book : books) {
-            sb.append("- ").append(book.getTitle()).append("\n");
+    private void setupLibrarySelection() {
+        libraryList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                loadBooksForLibrary(newVal);
+            }
+        });
+    }
+
+    private void loadBooksForLibrary(String libraryName) {
+        LibrariesDAO libDAO = new LibrariesDAO();
+        Libraries library = libDAO.findByName(libraryName);
+        if (library == null) return;
+
+        BookDAO bookDAO = new BookDAO();
+        List<Book> books = bookDAO.findByLibraryId(library.getIdLibrary());
+
+        // Mostra il pannello dei libri
+        booksPanel.setVisible(true);
+        booksPanel.setManaged(true);
+        booksPanelVisible = true;
+        toggleBooksBtn.setText("⮜");
+
+        // Popola la lista dei libri
+        booksList.getItems().clear();
+        if (books.isEmpty()) {
+            booksList.getItems().add("Nessun libro presente in questa libreria.");
+        } else {
+            for (Book b : books) {
+                booksList.getItems().add(b.getTitle());
+            }
         }
-        javafx.scene.control.Label booksLabel = new javafx.scene.control.Label(sb.toString());
-        booksLabel.setStyle("-fx-font-size: 16px;");
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(booksLabel);
+
+        // Aggiorna area centrale con titolo informativo
+        Label info = new Label("Libri della libreria: " + library.getLibName());
+        info.setStyle("-fx-font-size: 18px;");
+        contentArea.getChildren().setAll(info);
+    }
+
+    private void setupToggleButton() {
+        toggleBooksBtn.setOnAction(e -> {
+            if (booksPanelVisible) {
+                // Nascondi pannello libri
+                booksPanel.setVisible(false);
+                booksPanel.setManaged(false);
+                toggleBooksBtn.setText("⮞"); // freccia verso destra
+                booksPanelVisible = false;
+            } else {
+                // Mostra pannello libri
+                booksPanel.setVisible(true);
+                booksPanel.setManaged(true);
+                toggleBooksBtn.setText("⮜"); // freccia verso sinistra
+                booksPanelVisible = true;
+            }
+        });
     }
 }

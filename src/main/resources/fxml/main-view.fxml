@@ -1,23 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.library.controllers.HomeController">
 
-    <!-- Sidebar -->
+    <!-- Sidebar sinistra + pannello libri affiancato -->
     <left>
-        <VBox spacing="10" style="-fx-background-color: #2c3e50; -fx-padding: 10;">
-            <Label text="Librerie" style="-fx-text-fill: white; -fx-font-size: 18px;"/>
-            <ListView fx:id="libraryList" />
-            <Button fx:id="addLibraryBtn" text="Aggiungi Libreria" />
-        </VBox>
+        <HBox spacing="0">
+
+            <!-- Librerie -->
+            <VBox spacing="10"
+                style="-fx-background-color: #2c3e50; -fx-padding: 10; -fx-pref-width: 220;">
+                <Label text="Librerie" style="-fx-text-fill: white; -fx-font-size: 18px;"/>
+                <ListView fx:id="libraryList" />
+                <Button fx:id="addLibraryBtn" text="Aggiungi Libreria" />
+            </VBox>
+
+            <!-- Libri -->
+            <VBox fx:id="booksPanel"
+                spacing="10"
+                style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-pref-width: 300;"
+                visible="false" managed="false">
+                <Label text="Libri della Libreria" style="-fx-font-size: 18px;" />
+                <ListView fx:id="booksList"/>
+            </VBox>
+            
+            <!-- Toggle Panel -->
+            <VBox alignment="CENTER"
+                style="-fx-background-color: #bdc3c7; -fx-padding: 5;">
+                <Button fx:id="toggleBooksBtn"
+                        text="⮜"
+                        style="-fx-font-size: 16px; -fx-padding: 5;"/>
+            </VBox>
+        </HBox>
     </left>
+
 
     <!-- Area centrale -->
     <center>

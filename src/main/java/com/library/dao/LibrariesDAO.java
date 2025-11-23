@@ -62,4 +62,28 @@ public class LibrariesDAO {
         }
         return null;
     }
+
+    public Libraries findByName(String name) {
+    String sql = "SELECT IdLibrary, LibName, IdUser FROM Libraries WHERE LibName = ?";
+
+    try (Connection conn = DbUtils.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, name);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            return new Libraries(
+                rs.getInt("IdLibrary"),
+                rs.getString("LibName"),
+                rs.getInt("IdUser")
+            );
+        }
+
+    } catch (SQLException e) {
+        throw new RuntimeException(e);
+    }
+    return null;
+}
+
 }

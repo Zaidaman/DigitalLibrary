@@ -47,25 +47,37 @@ public class BookDAO {
         return books;
     }
 
-    public Book findById(int idBook) {
-        String sql = "SELECT IdBook, Title, IdAuthor, AnnoPub, BookFile FROM Book WHERE IdBook = ?";
-        try (Connection conn = DbUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, idBook);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new Book(
-                        rs.getString("Title"),
-                        null,
-                        null,
-                        rs.getBytes("BookFile"),
-                        -1
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public List<Book> findByLibraryId(int idLibrary) {
+    List<Book> books = new ArrayList<>();
+
+    String sql =
+        "SELECT b.IdBook, b.Title, b.IdAuthor, b.AnnoPub, b.BookFile " +
+        "FROM Book b " +
+        "JOIN BookLib bl ON b.IdBook = bl.IdBook " +
+        "WHERE bl.IdLibrary = ?";
+
+    try (Connection conn = DbUtils.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, idLibrary);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            Book book = new Book(
+                rs.getString("Title"),
+                null,     // author name not loaded here
+                null,     // genre not loaded
+                rs.getBytes("BookFile"),
+                idLibrary // now book knows from which library came
+            );
+            books.add(book);
         }
-        return null;
+
+    } catch (SQLException e) {
+        throw new RuntimeException(e);
     }
+
+    return books;
+}
+
 }
