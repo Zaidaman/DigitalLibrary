@@ -74,7 +74,8 @@ public class LoginController {
             stage.setScene(scene);
             stage.setTitle("Digital Library - Home");
         } catch (IOException e) {
-            messageLabel.setText("Errore nel caricamento della Home.");
+            e.printStackTrace(); // <-- stampa lo stack trace per debug
+            messageLabel.setText("Errore nel caricamento della Home: " + e.getMessage());
         }
     }
 }
