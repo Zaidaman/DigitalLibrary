@@ -16,17 +16,19 @@ dependencies {
     implementation 'org.openjfx:javafx-web:21'
     implementation 'org.openjfx:javafx-swing:21'  // <-- stesso numero versione
 
+    //Icepdf support
+    implementation files('libs/icepdf-core-7.3.1.jar')
+    implementation files('libs/icepdf-viewer-7.3.1.jar')
+
+
     // PDF support
     implementation 'org.apache.pdfbox:pdfbox:3.0.2'
 
     // EPUB support
     implementation files('libs/epublib-core-3.1.jar')
 
-    // IcePDF Viewer
-    implementation files('libs/icepdf-viewer-6.2.2.jar')
-
-    // IcePDF Core
-    implementation files('libs/icepdf-core-6.2.2.jar')
+    
+    
 }
 
 javafx {
