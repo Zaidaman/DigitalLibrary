@@ -71,10 +71,18 @@ public class LoginController {
             Stage stage = (Stage) loginButton.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
             Scene scene = new Scene(loader.load(), 900, 600);
+            // Passa l'utente loggato al controller della home
+            HomeController homeController = loader.getController();
+            LibUser loggedUser = userDAO.findAll().stream()
+                .filter(u -> u.getUsername().equals(usernameField.getText()))
+                .findFirst().orElse(null);
+            if (homeController != null && loggedUser != null) {
+                homeController.setUser(loggedUser);
+            }
             stage.setScene(scene);
             stage.setTitle("Digital Library - Home");
         } catch (IOException e) {
-            e.printStackTrace(); // <-- stampa lo stack trace per debug
+            e.printStackTrace();
             messageLabel.setText("Errore nel caricamento della Home: " + e.getMessage());
         }
     }

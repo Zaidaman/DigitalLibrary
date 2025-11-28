@@ -1,28 +1,31 @@
 package com.library.controllers;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Button;
-import javafx.embed.swing.SwingNode;
-
-import com.library.dao.BookDAO;
-import com.library.dao.LibrariesDAO;
-import com.library.models.Book;
-import com.library.models.Libraries;
-
-import javax.swing.*;
-
-import org.icepdf.ri.common.SwingController;
-import org.icepdf.ri.common.SwingViewBuilder;
-
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+
+import javax.swing.JPanel;
+
+import org.icepdf.ri.common.SwingController;
+import org.icepdf.ri.common.SwingViewBuilder;
+
+import com.library.dao.BookDAO;
+import com.library.dao.LibAccessDAO;
+import com.library.dao.LibrariesDAO;
+import com.library.models.Book;
+import com.library.models.LibAccess;
+import com.library.models.LibUser;
+import com.library.models.Libraries;
+
+import javafx.embed.swing.SwingNode;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 public class HomeController {
 
@@ -41,29 +44,40 @@ public class HomeController {
     @FXML
     private Button toggleBooksBtn;
 
+
     private boolean booksPanelVisible = true;
+
+    private LibUser currentUser;
 
     @FXML
     public void initialize() {
-        loadLibraries();
-        setupLibrarySelection();
-
-        // pannello libri nascosto inizialmente
+        // L'inizializzazione vera avviene dopo che l'utente è stato settato
+        // (tramite setUser)
         booksPanel.setVisible(false);
         booksPanel.setManaged(false);
         booksPanelVisible = true;
-
         setupToggleButton();
         setupBookSelection();
-
         showDefaultMessage();
     }
 
+    // Metodo per ricevere l'utente loggato
+    public void setUser(LibUser user) {
+        this.currentUser = user;
+        loadLibraries();
+        setupLibrarySelection();
+    }
+
     private void loadLibraries() {
-        LibrariesDAO librariesDAO = new LibrariesDAO();
         libraryList.getItems().clear();
-        for (Libraries lib : librariesDAO.findAll()) {
-            libraryList.getItems().add(lib.getLibName());
+        if (currentUser == null) return;
+        LibAccessDAO accessDAO = new LibAccessDAO();
+        LibrariesDAO librariesDAO = new LibrariesDAO();
+        for (LibAccess access : accessDAO.findByUserId(currentUser.getIdUser())) {
+            Libraries lib = librariesDAO.findById(access.getIdLibrary());
+            if (lib != null) {
+                libraryList.getItems().add(lib.getLibName());
+            }
         }
     }
 
