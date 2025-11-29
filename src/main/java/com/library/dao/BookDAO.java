@@ -1,5 +1,8 @@
 package com.library.dao;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +14,10 @@ import java.util.List;
 import com.library.models.Book;
 import com.library.utils.DbUtils;
 
+import javafx.scene.web.WebView;
+import nl.siegmann.epublib.domain.Resource;
+import nl.siegmann.epublib.epub.EpubReader;
+
 public class BookDAO {
 
     // Inserisce un nuovo libro nel DB con percorso file
@@ -21,10 +28,39 @@ public class BookDAO {
             ps.setString(1, book.getTitle());
             ps.setInt(2, idAuthor);
             ps.setInt(3, annoPub);
-            ps.setString(4, book.getFilePath()); // qui usiamo il path come VARCHAR
+            ps.setString(4, book.getFilePath());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // Carica EPUB dentro WebView
+    public void loadEpubInWebView(String epubFilePath, WebView webView) {
+        try {
+            // QUI usiamo il nome COMPLETO per evitare conflitti
+            nl.siegmann.epublib.domain.Book epub =
+                    new EpubReader().readEpub(new FileInputStream(epubFilePath));
+
+            String basePath = "tmp/epub_view/";
+            File baseDir = new File(basePath);
+            baseDir.mkdirs();
+
+            for (Resource res : epub.getResources().getAll()) {
+                File out = new File(basePath + res.getHref());
+                out.getParentFile().mkdirs();
+                FileOutputStream fos = new FileOutputStream(out);
+                fos.write(res.getData());
+                fos.close();
+            }
+
+            String firstChapter = epub.getContents().get(0).getHref();
+            File chapterFile = new File(basePath + firstChapter);
+
+            webView.getEngine().load(chapterFile.toURI().toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -38,11 +74,11 @@ public class BookDAO {
 
             while (rs.next()) {
                 Book book = new Book(
-                    rs.getString("Title"),
-                    null, // author
-                    null, // genre
-                    rs.getString("BookFile"), // path del file
-                    -1    // idLibrary non presente
+                        rs.getString("Title"),
+                        null,
+                        null,
+                        rs.getString("BookFile"),
+                        -1
                 );
                 books.add(book);
             }
@@ -53,14 +89,14 @@ public class BookDAO {
         return books;
     }
 
-    // Restituisce i libri di una libreria specifica
+    // Restituisce libri per libreria
     public List<Book> findByLibraryId(int idLibrary) {
         List<Book> books = new ArrayList<>();
         String sql =
-            "SELECT b.IdBook, b.Title, b.IdAuthor, b.AnnoPub, b.BookFile " +
-            "FROM Book b " +
-            "JOIN BookLib bl ON b.IdBook = bl.IdBook " +
-            "WHERE bl.IdLibrary = ?";
+                "SELECT b.IdBook, b.Title, b.IdAuthor, b.AnnoPub, b.BookFile " +
+                "FROM Book b " +
+                "JOIN BookLib bl ON b.IdBook = bl.IdBook " +
+                "WHERE bl.IdLibrary = ?";
 
         try (Connection conn = DbUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -70,11 +106,11 @@ public class BookDAO {
 
             while (rs.next()) {
                 Book book = new Book(
-                    rs.getString("Title"),
-                    null,
-                    null,
-                    rs.getString("BookFile"), // path del PDF
-                    idLibrary
+                        rs.getString("Title"),
+                        null,
+                        null,
+                        rs.getString("BookFile"),
+                        idLibrary
                 );
                 books.add(book);
             }
@@ -95,11 +131,11 @@ public class BookDAO {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return new Book(
-                    rs.getString("Title"),
-                    null,
-                    null,
-                    rs.getString("BookFile"), // path del PDF
-                    -1
+                        rs.getString("Title"),
+                        null,
+                        null,
+                        rs.getString("BookFile"),
+                        -1
                 );
             }
 

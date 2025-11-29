@@ -14,26 +14,26 @@ dependencies {
     implementation 'org.openjfx:javafx-controls:21'
     implementation 'org.openjfx:javafx-fxml:21'
     implementation 'org.openjfx:javafx-web:21'
-    implementation 'org.openjfx:javafx-swing:21'  // <-- stesso numero versione
+    implementation 'org.openjfx:javafx-swing:21'
 
-    //Icepdf support
+    // ICEPDF support
     implementation files('libs/icepdf-core-7.3.1.jar')
     implementation files('libs/icepdf-viewer-7.3.1.jar')
-
 
     // PDF support
     implementation 'org.apache.pdfbox:pdfbox:3.0.2'
 
-    // EPUB support
+    // EPUB support (SOLO JAR LOCALI!)
     implementation files('libs/epublib-core-3.1.jar')
-
-    
-    
+    implementation files('libs/epublib-tools-3.1.jar')
+    // SLF4J per epublib
+    implementation 'org.slf4j:slf4j-api:2.0.9'          // API
+    implementation 'org.slf4j:slf4j-simple:2.0.9'       // implementazione minimale
 }
 
 javafx {
     version = "21"
-    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing' ] // <-- aggiunto swing
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing' ]
 }
 
 application {
