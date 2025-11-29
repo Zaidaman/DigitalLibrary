@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Optional;
 
 import javax.swing.JPanel;
 
@@ -24,6 +25,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -41,8 +43,12 @@ public class HomeController {
     @FXML
     private StackPane contentArea;
 
+
     @FXML
     private Button toggleBooksBtn;
+
+    @FXML
+    private Button addLibraryBtn;
 
 
     private boolean booksPanelVisible = true;
@@ -58,7 +64,38 @@ public class HomeController {
         booksPanelVisible = true;
         setupToggleButton();
         setupBookSelection();
+        setupAddLibraryBtn();
         showDefaultMessage();
+    }
+
+    private void setupAddLibraryBtn() {
+        if (addLibraryBtn != null) {
+            addLibraryBtn.setOnAction(e -> {
+                if (currentUser == null) return;
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setTitle("Nuova Libreria");
+                dialog.setHeaderText("Crea una nuova libreria");
+                dialog.setContentText("Nome della libreria:");
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresent(libName -> {
+                    if (libName.trim().isEmpty()) return;
+                    LibrariesDAO librariesDAO = new LibrariesDAO();
+                    // Calcola nuovo id manualmente
+                    int newId = 1;
+                    List<Libraries> allLibs = librariesDAO.findAll();
+                    for (Libraries l : allLibs) {
+                        if (l.getIdLibrary() >= newId) newId = l.getIdLibrary() + 1;
+                    }
+                    Libraries newLib = new Libraries(newId, libName.trim());
+                    librariesDAO.insert(newLib);
+                    // Associa all'utente corrente
+                    LibAccessDAO accessDAO = new LibAccessDAO();
+                    accessDAO.insert(new LibAccess(currentUser.getIdUser(), newId));
+                    // Aggiorna lista
+                    loadLibraries();
+                });
+            });
+        }
     }
 
     // Metodo per ricevere l'utente loggato
