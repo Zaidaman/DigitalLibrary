@@ -186,12 +186,12 @@ public class HomeController {
 
     public void showEpub(WebView webView, String epubFileName) {
         try {
-            // Nascondi i pulsanti all'inizio
+            // Nascondi i pulsanti finché non carichi tutto
             prevBtn.setVisible(false);
             nextBtn.setVisible(false);
 
-            // Carica l'EPUB dalla cartella resources/epub
-            InputStream epubStream = getClass().getClassLoader().getResourceAsStream("epub/" + epubFileName);
+            InputStream epubStream = getClass().getClassLoader()
+                                        .getResourceAsStream("epub/" + epubFileName);
             if (epubStream == null) {
                 System.out.println("❌ EPUB non trovato: " + epubFileName);
                 return;
@@ -199,11 +199,10 @@ public class HomeController {
 
             nl.siegmann.epublib.domain.Book epub = new EpubReader().readEpub(epubStream);
 
-            // Crea cartella temporanea
+            // Estrai cartella temporanea
             tempDirForEpub = Files.createTempDirectory("epub_view_").toFile();
             tempDirForEpub.deleteOnExit();
 
-            // Estrai tutte le risorse
             for (Resource res : epub.getResources().getAll()) {
                 File outFile = new File(tempDirForEpub, res.getHref());
                 outFile.getParentFile().mkdirs();
@@ -212,54 +211,75 @@ public class HomeController {
                 }
             }
 
-            // Trova tutti i capitoli “reali” (skip cover/titlepage)
+            // ### COPERTINA ###
+            // Cerca tra le risorse la prima immagine che sembra essere la copertina
+            File coverFile = null;
+            for (Resource res : epub.getResources().getAll()) {
+                String href = res.getHref().toLowerCase();
+                // filtra per immagini e parole chiave comuni per cover
+                if ((href.endsWith(".jpg") || href.endsWith(".jpeg") || href.endsWith(".png"))
+                        && href.contains("cover")) {
+                    coverFile = new File(tempDirForEpub, res.getHref());
+                    break;
+                }
+            }
+
+            // Se trovi una copertina, caricala prima
+            if (coverFile != null && coverFile.exists()) {
+                webView.getEngine().load(coverFile.toURI().toString());
+
+                applyMargin(webView);
+            } else {
+                System.out.println("📌 Copertina non trovata o non nominata come cover");
+            }
+
+            // ## TROVA CAPITOLI ##
             epubChapters = new ArrayList<>();
             for (Resource res : epub.getContents()) {
                 String href = res.getHref().toLowerCase();
-                if (!href.contains("cover") && !href.contains("titlepage")) {
-                    String content = new String(res.getData(), StandardCharsets.UTF_8).replaceAll("\\s+", "");
-                    if (content.length() > 50) {
+                if (!href.contains("cover") && !href.contains("titlepage")
+                        && (href.endsWith(".html") || href.endsWith(".xhtml"))) {
+                    String content = new String(res.getData(), StandardCharsets.UTF_8);
+                    if (content.trim().length() > 50) {
                         epubChapters.add(res);
                     }
                 }
             }
 
-            // Carica il primo capitolo se disponibile
+            // Mostra i pulsanti se ci sono capitoli
             if (!epubChapters.isEmpty()) {
-                currentChapterIndex = 0;
-                loadChapter(webView, epubChapters.get(currentChapterIndex));
-
-                // Mostra i pulsanti di navigazione
                 prevBtn.setVisible(true);
                 nextBtn.setVisible(true);
-
-                // Collega i pulsanti al WebView
+                currentChapterIndex = 0;
                 setupNavigation(webView);
-
             } else {
-                System.out.println("❌ Nessun capitolo HTML reale trovato nell'EPUB");
+                System.out.println("❌ Nessun capitolo html reale trovato nell'EPUB");
             }
-            
-        } catch (IOException e) {
-            System.err.println("Errore IO durante la visualizzazione dell'EPUB: " + e.getMessage());
-            prevBtn.setVisible(false);
-            nextBtn.setVisible(false);
-        } catch (NullPointerException e) {
-            System.err.println("Errore: EPUB non valido o risorsa mancante: " + e.getMessage());
-            prevBtn.setVisible(false);
-            nextBtn.setVisible(false);
+
         } catch (Exception e) {
-            System.err.println("Errore generico durante la visualizzazione dell'EPUB: " + e.getMessage());
+            e.printStackTrace();
             prevBtn.setVisible(false);
             nextBtn.setVisible(false);
         }
     }
 
+    private void applyMargin(WebView webView) {
+        webView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
+                webView.getEngine().executeScript(
+                    "document.body.style.margin='20px';" +
+                    "document.body.style.padding='10px';"
+                );
+            }
+        });
+    }
 
     private void loadChapter(WebView webView, Resource chapter) {
         try {
             File chapterFile = new File(tempDirForEpub, chapter.getHref());
             webView.getEngine().load(chapterFile.toURI().toString());
+
+            applyMargin(webView);
         } catch (Exception e) {
             e.printStackTrace();
         }
