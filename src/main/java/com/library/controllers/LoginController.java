@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.library.dao.LibUserDAO;
 import com.library.models.LibUser;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -22,15 +21,15 @@ public class LoginController {
     private PasswordField passwordField;
     @FXML
     private Button loginButton;
-    @FXML
-    private Button registerButton;
+    // @FXML
+    // private Button registerButton;
     @FXML
     private Label messageLabel;
 
     private final LibUserDAO userDAO = new LibUserDAO();
 
     @FXML
-    private void onLogin(ActionEvent event) {
+    private void onLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
@@ -46,7 +45,7 @@ public class LoginController {
     }
 
     @FXML
-    private void onRegister(ActionEvent event) {
+    private void onRegister() {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
@@ -82,8 +81,8 @@ public class LoginController {
             stage.setScene(scene);
             stage.setTitle("Digital Library - Home");
         } catch (IOException e) {
-            e.printStackTrace();
-            messageLabel.setText("Errore nel caricamento della Home: " + e.getMessage());
+            // Log dell'errore, senza printStackTrace
+            messageLabel.setText("Errore nel caricamento della Home: " + (e.getMessage() != null ? e.getMessage() : "Errore sconosciuto"));
         }
     }
 }

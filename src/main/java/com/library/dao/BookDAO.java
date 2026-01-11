@@ -3,6 +3,7 @@ package com.library.dao;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.library.models.Book;
 import com.library.utils.DbUtils;
@@ -49,9 +52,9 @@ public class BookDAO {
             for (Resource res : epub.getResources().getAll()) {
                 File out = new File(basePath + res.getHref());
                 out.getParentFile().mkdirs();
-                FileOutputStream fos = new FileOutputStream(out);
-                fos.write(res.getData());
-                fos.close();
+                    try (FileOutputStream fos = new FileOutputStream(out)) {
+                        fos.write(res.getData());
+                    }
             }
 
             String firstChapter = epub.getContents().get(0).getHref();
@@ -59,8 +62,10 @@ public class BookDAO {
 
             webView.getEngine().load(chapterFile.toURI().toString());
 
+        } catch (IOException e) {
+            Logger.getLogger(BookDAO.class.getName()).log(Level.SEVERE, "Errore IO durante il caricamento EPUB", e);
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(BookDAO.class.getName()).log(Level.SEVERE, "Errore generico durante il caricamento EPUB", e);
         }
     }
 

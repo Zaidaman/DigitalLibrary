@@ -1,8 +1,8 @@
 package com.library.controllers;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -30,14 +30,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
+import javafx.scene.web.WebView;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
-
-import javafx.scene.web.WebView;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class HomeController {
 
@@ -213,8 +208,12 @@ public class HomeController {
                 System.out.println("Nessun capitolo HTML trovato nell'EPUB");
             }
 
+        } catch (IOException e) {
+            System.err.println("Errore IO durante la visualizzazione dell'EPUB: " + e.getMessage());
+        } catch (NullPointerException e) {
+            System.err.println("Errore: EPUB non valido o risorsa mancante: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Errore generico durante la visualizzazione dell'EPUB: " + e.getMessage());
         }
     }
 
@@ -274,8 +273,11 @@ public class HomeController {
 
             contentArea.getChildren().setAll(swingNode);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (NullPointerException e) {
+            System.err.println("Errore: PDF non trovato o risorsa mancante: " + e.getMessage());
+            showDefaultMessage();
+        } catch (IOException e) {
+            System.err.println("Errore IO durante il caricamento del PDF: " + e.getMessage());
             showDefaultMessage();
         }
     }
