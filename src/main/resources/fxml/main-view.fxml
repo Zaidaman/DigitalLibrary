@@ -46,8 +46,8 @@
         <VBox spacing="10" style="-fx-padding: 20;">
             <StackPane fx:id="contentArea" style="-fx-padding: 10; -fx-background-color: white;"/>
             <HBox spacing="10" alignment="CENTER">
-                <Button fx:id="prevBtn" text="◀ Capitolo precedente"/>
-                <Button fx:id="nextBtn" text="Capitolo successivo ▶"/>
+                <Button fx:id="prevBtn" text="◀ Capitolo precedente" visible="false"/>
+                <Button fx:id="nextBtn" text="Capitolo successivo ▶" visible="false"/>
             </HBox>
         </VBox>
     </center>
