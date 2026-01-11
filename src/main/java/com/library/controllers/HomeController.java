@@ -30,14 +30,10 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
+import javafx.scene.web.WebView;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 
-import javafx.scene.web.WebView;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class HomeController {
 
