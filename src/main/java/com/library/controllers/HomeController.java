@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +51,11 @@ public class HomeController {
     @FXML
     private StackPane contentArea;
 
+    @FXML
+    private Button prevBtn;
+
+    @FXML
+    private Button nextBtn;
 
     @FXML
     private Button toggleBooksBtn;
@@ -181,7 +188,10 @@ public class HomeController {
                                         .getResourceAsStream("epub/" + epubFileName);
 
             if (epubStream == null) {
-                System.out.println("EPUB non trovato: " + epubFileName);
+                System.out.println("❌ EPUB non trovato: " + epubFileName);
+                // Nascondi pulsanti se EPUB non trovato
+                prevBtn.setVisible(false);
+                nextBtn.setVisible(false);
                 return;
             }
 
@@ -199,22 +209,47 @@ public class HomeController {
                 }
             }
 
-            // Trova il primo file HTML da visualizzare
-            Resource firstHtml = epub.getContents().stream().findFirst().orElse(null);
+            // Trova tutti i capitoli “reali” (salta cover/titlepage)
+            List<Resource> epubChapters = new ArrayList<>();
+            for (Resource res : epub.getContents()) {
+                String href = res.getHref().toLowerCase();
+                if (!href.contains("cover") && !href.contains("titlepage")) {
+                    String content = new String(res.getData(), StandardCharsets.UTF_8).replaceAll("\\s+", "");
+                    if (content.length() > 50) {
+                        epubChapters.add(res);
+                    }
+                }
+            }
 
-            if (firstHtml != null) {
-                File chapterFile = new File(basePath + firstHtml.getHref());
+            // Controlla se ci sono capitoli
+            if (!epubChapters.isEmpty()) {
+                // Carica il primo capitolo
+                File chapterFile = new File(basePath + epubChapters.get(0).getHref());
                 webView.getEngine().load(chapterFile.toURI().toString());
+
+                // Mostra i pulsanti di navigazione
+                prevBtn.setVisible(true);
+                nextBtn.setVisible(true);
+
             } else {
-                System.out.println("Nessun capitolo HTML trovato nell'EPUB");
+                System.out.println("❌ Nessun capitolo HTML reale trovato nell'EPUB");
+                // Nascondi i pulsanti se non ci sono capitoli
+                prevBtn.setVisible(false);
+                nextBtn.setVisible(false);
             }
 
         } catch (IOException e) {
             System.err.println("Errore IO durante la visualizzazione dell'EPUB: " + e.getMessage());
+            prevBtn.setVisible(false);
+            nextBtn.setVisible(false);
         } catch (NullPointerException e) {
             System.err.println("Errore: EPUB non valido o risorsa mancante: " + e.getMessage());
+            prevBtn.setVisible(false);
+            nextBtn.setVisible(false);
         } catch (Exception e) {
             System.err.println("Errore generico durante la visualizzazione dell'EPUB: " + e.getMessage());
+            prevBtn.setVisible(false);
+            nextBtn.setVisible(false);
         }
     }
 
