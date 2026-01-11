@@ -43,13 +43,6 @@
             <Label text="Benvenuto nella tua Libreria Digitale!"
                    style="-fx-font-size: 20px;"/>
         </StackPane>
-        <VBox spacing="10" style="-fx-padding: 20;">
-            <StackPane fx:id="contentArea" style="-fx-padding: 10; -fx-background-color: white;"/>
-            <HBox spacing="10" alignment="CENTER">
-                <Button fx:id="prevBtn" text="◀ Capitolo precedente"/>
-                <Button fx:id="nextBtn" text="Capitolo successivo ▶"/>
-            </HBox>
-        </VBox>
     </center>
 
 </BorderPane>
