@@ -11,3 +11,20 @@
     -fx-background-color: #1abc9c;
     -fx-text-fill: white;
 }
+
+/* Stile per la dialog di upload libro */
+.upload-book-dialog {
+    -fx-background-color: #f8f8f8;
+}
+.upload-book-dialog .label {
+    -fx-text-fill: #2c3e50;
+}
+.upload-book-dialog .text-field {
+    -fx-background-color: #fff;
+    -fx-border-color: #bdc3c7;
+}
+.upload-book-dialog .button {
+    -fx-background-color: #1abc9c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<DialogPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.library.controllers.UploadBookController"
+            styleClass="upload-book-dialog">
+    <content>
+        <VBox spacing="15" style="-fx-padding: 20;">
+            <Label text="Carica un nuovo libro" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <HBox spacing="10">
+                <Label text="Libreria:" minWidth="80"/>
+                <ComboBox fx:id="libraryComboBox" prefWidth="200"/>
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Titolo:" minWidth="80"/>
+                <TextField fx:id="titleField" promptText="Titolo del libro"/>
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Autore:" minWidth="80"/>
+                <ComboBox fx:id="authorComboBox" promptText="Seleziona autore" prefWidth="200" editable="true"/>
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Genere:" minWidth="80"/>
+                <ComboBox fx:id="genreComboBox" promptText="Seleziona genere" prefWidth="200" editable="true"/>
+            </HBox>
+            <HBox spacing="10">
+                <Label text="File:" minWidth="80"/>
+                <TextField fx:id="fileField" promptText="Seleziona file..." editable="false" prefWidth="200"/>
+                <Button fx:id="browseBtn" text="Sfoglia..."/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button fx:id="cancelBtn" text="Annulla"/>
+                <Button fx:id="uploadBtn" text="Carica" defaultButton="true"/>
+            </HBox>
+        </VBox>
+    </content>
+</DialogPane>
