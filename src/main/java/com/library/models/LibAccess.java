@@ -1,8 +1,8 @@
 package com.library.models;
 
 public class LibAccess {
-    private int IdUser;
-    private int IdLibrary;
+    private final int IdUser;
+    private final int IdLibrary;
 
     public LibAccess(int IdUser, int IdLibrary) {
         this.IdUser = IdUser;

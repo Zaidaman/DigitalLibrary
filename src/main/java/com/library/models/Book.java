@@ -1,12 +1,12 @@
 package com.library.models;
 
 public class Book {
-    private int IdBook;
-    private String Title;
-    private String Author;
-    private String Genre;
-    private String filePath;
-    private int IdLibrary;
+    // Rimossa variabile non usata IdBook
+    private final String Title;
+    private final String Author;
+    private final String Genre;
+    private final String filePath;
+    private final int IdLibrary;
 
 
     public Book(String title, String author, String genre, String filePath, int idLibrary) {

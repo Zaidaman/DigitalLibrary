@@ -1,8 +1,8 @@
 package com.library.models;
 
 public class Genre {
-    private int IdGenre;
-    private String GenreName;
+    private final int IdGenre;
+    private final String GenreName;
 
     public Genre(int IdGenre, String GenreName) {
         this.IdGenre = IdGenre;

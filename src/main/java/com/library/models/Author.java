@@ -1,10 +1,10 @@
 package com.library.models;
 
 public class Author {
-    private int IdAuthor;
-    private String AuthorName;
-    private String MidName;
-    private String Surname;
+    private final int IdAuthor;
+    private final String AuthorName;
+    private final String MidName;
+    private final String Surname;
 
     public Author(int IdAuthor, String AuthorName, String MidName, String Surname) {
         this.IdAuthor = IdAuthor;

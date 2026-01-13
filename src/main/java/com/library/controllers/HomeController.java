@@ -256,8 +256,8 @@ public class HomeController {
                 System.out.println("❌ Nessun capitolo html reale trovato nell'EPUB");
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException | NullPointerException e) {
+            System.err.println("Errore durante il caricamento dell'EPUB: " + e.getMessage());
             prevBtn.setVisible(false);
             nextBtn.setVisible(false);
         }
@@ -278,10 +278,9 @@ public class HomeController {
         try {
             File chapterFile = new File(tempDirForEpub, chapter.getHref());
             webView.getEngine().load(chapterFile.toURI().toString());
-
             applyMargin(webView);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (NullPointerException e) {
+            System.err.println("Errore durante il caricamento del capitolo EPUB: " + e.getMessage());
         }
     }
 

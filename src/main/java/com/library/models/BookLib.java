@@ -1,8 +1,8 @@
 package com.library.models;
 
 public class BookLib {
-	private int idBook;
-	private int idLibrary;
+	private final int idBook;
+	private final int idLibrary;
 
 	public BookLib(int idBook, int idLibrary) {
 		this.idBook = idBook;
