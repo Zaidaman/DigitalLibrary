@@ -19,9 +19,7 @@ import org.icepdf.ri.common.SwingViewBuilder;
 import com.library.dao.BookDAO;
 import com.library.dao.LibAccessDAO;
 import com.library.dao.LibrariesDAO;
-import com.library.models.Author;
 import com.library.models.Book;
-import com.library.models.Genre;
 import com.library.models.LibAccess;
 import com.library.models.LibUser;
 import com.library.models.Libraries;
@@ -64,9 +62,6 @@ public class HomeController {
     @FXML
     private Button addLibraryBtn;
 
-    @FXML
-    private Button uploadBookBtn;
-
     private boolean booksPanelVisible = true;
 
     private LibUser currentUser;
@@ -86,108 +81,7 @@ public class HomeController {
         setupToggleButton();
         setupBookSelection();
         setupAddLibraryBtn();
-        setupUploadBookBtn();
         showDefaultMessage();
-    }
-
-    private void setupUploadBookBtn() {
-        if (uploadBookBtn != null) {
-            uploadBookBtn.setOnAction(e -> {
-                if (currentUser == null) return;
-                try {
-                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/upload-book-dialog.fxml"));
-                    javafx.scene.control.DialogPane dialogPane = loader.load();
-                    UploadBookController controller = loader.getController();
-                    controller.setCurrentUserId(currentUser.getIdUser());
-
-                    javafx.scene.control.Dialog<Void> dialog = new javafx.scene.control.Dialog<>();
-                    dialog.setDialogPane(dialogPane);
-                    dialog.setTitle("Carica Libro");
-                    dialog.setResizable(false);
-                    dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-
-                    // Chiudi su X o ESC
-                    dialog.setResultConverter(buttonType -> null);
-                    dialog.setOnCloseRequest(ev -> dialog.close());
-
-                    controller.cancelBtn.setOnAction(ev -> dialog.close());
-
-                    controller.uploadBtn.setOnAction(ev -> {
-                        // Validazione campi
-                        String title = controller.getTitle();
-                        Author author = controller.getSelectedAuthor();
-                        Genre genre = controller.getSelectedGenre();
-                        File file = controller.getSelectedFile();
-                        String libName = controller.getSelectedLibrary();
-                        if (title == null || title.isEmpty() || author == null || genre == null || file == null || libName == null) {
-                            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR, "Compila tutti i campi e seleziona un file.");
-                            alert.showAndWait();
-                            return;
-                        }
-
-                        // Copia file nella cartella risorse (pdf/epub)
-                        String ext = file.getName().toLowerCase().endsWith(".pdf") ? ".pdf" : ".epub";
-                        String destFolder = ext.equals(".pdf") ? "src/main/resources/pdf/" : "src/main/resources/epub/";
-                        File destDir = new File(destFolder);
-                        destDir.mkdirs();
-                        String destFileName = System.currentTimeMillis() + "_" + file.getName();
-                        File destFile = new File(destDir, destFileName);
-                        try {
-                            java.nio.file.Files.copy(file.toPath(), destFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                        } catch (Exception ex) {
-                            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR, "Errore nel salvataggio del file: " + ex.getMessage());
-                            alert.showAndWait();
-                            return;
-                        }
-
-                        // Inserisci libro nel DB
-                        BookDAO bookDAO = new BookDAO();
-                        Book book = new Book(title, null, null, (ext.equals(".pdf") ? "pdf/" : "epub/") + destFileName, -1);
-                        // Anno pubblicazione non gestito, metti -1 o chiedi campo
-                        bookDAO.insert(book, author.getIdAuthor(), -1);
-
-
-                        // Recupera id libro appena inserito (assumendo titolo univoco)
-                        Book inserted = bookDAO.findByTitle(title);
-                        if (inserted == null) {
-                            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR, "Errore inserimento libro nel database.");
-                            alert.showAndWait();
-                            return;
-                        }
-                        int idBook = -1;
-                        try {
-                            java.lang.reflect.Field f = inserted.getClass().getDeclaredField("IdBook");
-                            f.setAccessible(true);
-                            idBook = f.getInt(inserted);
-                        } catch (Exception ex) {
-                            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR, "Impossibile recuperare l'ID del libro.");
-                            alert.showAndWait();
-                            return;
-                        }
-
-                        // Associa libro a libreria
-                        LibrariesDAO librariesDAO = new LibrariesDAO();
-                        Libraries lib = librariesDAO.findByName(libName);
-                        if (lib != null) {
-                            com.library.dao.BookLibDAO bookLibDAO = new com.library.dao.BookLibDAO();
-                            bookLibDAO.insert(new com.library.models.BookLib(idBook, lib.getIdLibrary()));
-                        }
-
-                        // Associa libro a genere
-                        com.library.dao.BookGenreDAO bookGenreDAO = new com.library.dao.BookGenreDAO();
-                        bookGenreDAO.insert(new com.library.models.BookGenre(idBook, genre.getIdGenre()));
-
-                        dialog.close();
-                        // Aggiorna lista libri
-                        loadBooksForLibrary(libName);
-                    });
-
-                    dialog.showAndWait();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-        }
     }
 
     private void setupAddLibraryBtn() {
