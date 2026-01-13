@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" spacing="15" style="-fx-padding: 20;">
+    <Label text="Inserisci un nuovo libro" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Libreria:"/>
+        <ComboBox fx:id="libraryComboBox" prefWidth="200"/>
+    </HBox>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="File libro:"/>
+        <Button fx:id="selectBookFileBtn" text="Seleziona file..."/>
+        <Label fx:id="selectedBookFileLabel" text="Nessun file selezionato" style="-fx-text-fill: #888;"/>
+    </HBox>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Titolo:"/>
+        <TextField fx:id="titleField" promptText="Titolo del libro" prefWidth="300"/>
+    </HBox>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Autore:"/>
+        <TextField fx:id="authorField" promptText="Cerca autore (nome o cognome)" prefWidth="300"/>
+        <Button fx:id="addAuthorBtn" text="+"/>
+    </HBox>
+    <ListView fx:id="authorSuggestionsList" prefHeight="70" visible="false" managed="false"/>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Genere:"/>
+        <TextField fx:id="genreField" promptText="Cerca genere" prefWidth="200"/>
+        <Button fx:id="addGenreBtn" text="+"/>
+    </HBox>
+    <ListView fx:id="genreSuggestionsList" prefHeight="70" visible="false" managed="false"/>
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="saveBookBtn" text="Salva libro" style="-fx-font-size: 16px;"/>
+    </HBox>
+</VBox>

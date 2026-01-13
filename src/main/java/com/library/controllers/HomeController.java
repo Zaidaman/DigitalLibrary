@@ -26,6 +26,9 @@ import com.library.models.Libraries;
 
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -33,6 +36,8 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 
@@ -62,6 +67,9 @@ public class HomeController {
     @FXML
     private Button addLibraryBtn;
 
+    @FXML
+    private Button addBookBtn;
+
     private boolean booksPanelVisible = true;
 
     private LibUser currentUser;
@@ -81,7 +89,25 @@ public class HomeController {
         setupToggleButton();
         setupBookSelection();
         setupAddLibraryBtn();
+        setupAddBookBtn();
         showDefaultMessage();
+    }
+    private void setupAddBookBtn() {
+        if (addBookBtn != null) {
+            addBookBtn.setOnAction(e -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add-book-view.fxml"));
+                    Parent root = loader.load();
+                    Stage stage = new Stage();
+                    stage.setTitle("Aggiungi un nuovo libro");
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.setScene(new Scene(root));
+                    stage.showAndWait();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+        }
     }
 
     private void setupAddLibraryBtn() {

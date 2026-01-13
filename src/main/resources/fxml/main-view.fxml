@@ -16,6 +16,7 @@
                 <Label text="Librerie" style="-fx-text-fill: white; -fx-font-size: 18px;"/>
                 <ListView fx:id="libraryList" />
                 <Button fx:id="addLibraryBtn" text="Aggiungi Libreria" />
+                <Button fx:id="addBookBtn" text="Aggiungi Libro" />
             </VBox>
 
             <!-- Libri -->
