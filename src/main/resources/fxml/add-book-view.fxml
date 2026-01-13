@@ -16,7 +16,9 @@
     </HBox>
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="Titolo:"/>
-        <TextField fx:id="titleField" promptText="Titolo del libro" prefWidth="300"/>
+        <TextField fx:id="titleField" promptText="Titolo del libro" prefWidth="180"/>
+        <Label text="Anno:"/>
+        <TextField fx:id="yearField" promptText="Anno" prefWidth="70"/>
     </HBox>
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="Autore:"/>
