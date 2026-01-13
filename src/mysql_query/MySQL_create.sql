@@ -27,7 +27,7 @@ Surname varchar(20) not null
 create table if not exists Book (
 IdBook int auto_increment primary key,
 Title varchar(50) not null,
-IdAuthor int not null default 1,
+IdAuthor int,
 AnnoPub int,
 BookFile varchar(400) not null,
 foreign key(IdAuthor) references Author(IdAuthor)
