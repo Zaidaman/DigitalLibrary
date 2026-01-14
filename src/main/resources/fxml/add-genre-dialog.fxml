@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" spacing="14" style="-fx-padding: 18;">
+    <Label text="Nuovo genere" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+    <HBox spacing="8">
+        <Label text="Nome genere:"/>
+        <TextField fx:id="genreNameField" promptText="Nome genere"/>
+    </HBox>
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="saveGenreBtn" text="Salva" style="-fx-font-size: 15px;"/>
+        <Button fx:id="cancelBtn" text="Annulla"/>
+    </HBox>
+</VBox>
