@@ -98,6 +98,11 @@ public class HomeController {
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add-book-view.fxml"));
                     Parent root = loader.load();
+                    
+                    // Passa l'utente corrente al controller
+                    AddBookController controller = loader.getController();
+                    controller.setUser(currentUser);
+                    
                     Stage stage = new Stage();
                     stage.setTitle("Aggiungi un nuovo libro");
                     stage.initModality(Modality.APPLICATION_MODAL);

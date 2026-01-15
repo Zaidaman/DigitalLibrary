@@ -23,19 +23,26 @@ import nl.siegmann.epublib.epub.EpubReader;
 
 public class BookDAO {
 
-    // Inserisce un nuovo libro nel DB con percorso file
-    public void insert(Book book, int idAuthor, int annoPub) {
+    // Inserisce un nuovo libro nel DB con percorso file e restituisce l'id generato
+    public int insert(Book book, int idAuthor, int annoPub) {
         String sql = "INSERT INTO Book (Title, IdAuthor, AnnoPub, BookFile) VALUES (?, ?, ?, ?)";
         try (Connection conn = DbUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, book.getTitle());
             ps.setInt(2, idAuthor);
             ps.setInt(3, annoPub);
             ps.setString(4, book.getFilePath());
             ps.executeUpdate();
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return -1;
     }
 
     // Carica EPUB dentro WebView

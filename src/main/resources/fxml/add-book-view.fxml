@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1" spacing="15" style="-fx-padding: 20;">
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.library.controllers.AddBookController" spacing="15" style="-fx-padding: 20;">
     <Label text="Inserisci un nuovo libro" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="Libreria:"/>
@@ -25,13 +25,13 @@
         <TextField fx:id="authorField" promptText="Cerca autore (nome o cognome)" prefWidth="300"/>
         <Button fx:id="addAuthorBtn" text="+"/>
     </HBox>
-    <ListView fx:id="authorSuggestionsList" prefHeight="70" visible="false" managed="false"/>
+    <ListView fx:id="authorSuggestionsList" prefHeight="120" visible="false" managed="false" style="-fx-border-color: #ccc; -fx-border-width: 1;"/>
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="Genere:"/>
         <TextField fx:id="genreField" promptText="Cerca genere" prefWidth="200"/>
         <Button fx:id="addGenreBtn" text="+"/>
     </HBox>
-    <ListView fx:id="genreSuggestionsList" prefHeight="70" visible="false" managed="false"/>
+    <ListView fx:id="genreSuggestionsList" prefHeight="120" visible="false" managed="false" style="-fx-border-color: #ccc; -fx-border-width: 1;"/>
     <HBox spacing="10" alignment="CENTER_RIGHT">
         <Button fx:id="saveBookBtn" text="Salva libro" style="-fx-font-size: 16px;"/>
     </HBox>

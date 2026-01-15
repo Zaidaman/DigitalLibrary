@@ -31,10 +31,42 @@ public class AddAuthorDialogController {
             Author author = new Author(0, name, mid, surname);
             new AuthorDAO().insert(author);
             this.createdAuthor = author;
-            closeDialog();
+            
+            // Mostra notifica di successo
+            showNotification("Autore aggiunto con successo!");
+            
+            // Chiudi dopo un breve delay
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1500);
+                    javafx.application.Platform.runLater(() -> closeDialog());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
         } else {
-            // Opzionale: mostra errore
+            // Mostra errore se nome o cognome sono vuoti
+            nameField.setStyle("-fx-border-color: red;");
+            surnameField.setStyle("-fx-border-color: red;");
         }
+    }
+    
+    private void showNotification(String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("Notifica");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.show();
+        
+        // Chiudi automaticamente dopo 2 secondi
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                javafx.application.Platform.runLater(() -> alert.close());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
     }
 
     private void closeDialog() {
