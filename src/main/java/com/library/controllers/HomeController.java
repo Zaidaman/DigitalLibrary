@@ -221,8 +221,17 @@ public class HomeController {
             prevBtn.setVisible(false);
             nextBtn.setVisible(false);
 
-            InputStream epubStream = getClass().getClassLoader()
-                                        .getResourceAsStream("epub/" + epubFileName);
+            // Prima prova a caricare da library-data/ (file aggiunti dall'utente)
+            File epubFile = new File("library-data/epub/" + epubFileName);
+            InputStream epubStream;
+            
+            if (epubFile.exists()) {
+                epubStream = new java.io.FileInputStream(epubFile);
+            } else {
+                // Altrimenti carica dal classpath (risorse statiche)
+                epubStream = getClass().getClassLoader().getResourceAsStream("epub/" + epubFileName);
+            }
+            
             if (epubStream == null) {
                 System.out.println("❌ EPUB non trovato: " + epubFileName);
                 return;
@@ -365,8 +374,17 @@ public class HomeController {
 
     private void showPdfFromResource(String resourcePath) {
         try {
-            // Carica la risorsa dal classpath
-            InputStream pdfStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
+            // Prima prova a caricare da library-data/ (file aggiunti dall'utente)
+            File pdfFile = new File("library-data/" + resourcePath);
+            InputStream pdfStream;
+            
+            if (pdfFile.exists()) {
+                pdfStream = new java.io.FileInputStream(pdfFile);
+            } else {
+                // Altrimenti carica dal classpath (risorse statiche)
+                pdfStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
+            }
+            
             if (pdfStream == null) {
                 System.out.println("PDF non trovato: " + resourcePath);
                 showDefaultMessage();

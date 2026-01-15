@@ -259,7 +259,8 @@ public class AddBookController {
             if (library == null) return; // Libreria non trovata
 
             String ext = selectedBookFile.getName().toLowerCase().endsWith(".epub") ? "epub" : "pdf";
-            String destPath = "src/main/resources/" + ext + "/";
+            // Usa una cartella dati persistente invece di resources
+            String destPath = "library-data/" + ext + "/";
             java.io.File destFolder = new java.io.File(destPath);
             if (!destFolder.exists()) destFolder.mkdirs();
             java.io.File destFile = new java.io.File(destPath + selectedBookFile.getName());
