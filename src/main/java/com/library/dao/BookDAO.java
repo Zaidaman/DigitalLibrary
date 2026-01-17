@@ -156,4 +156,20 @@ public class BookDAO {
         }
         return null;
     }
+
+    // Trova l'ID di un libro tramite il titolo
+    public int findIdByTitle(String title) {
+        String sql = "SELECT IdBook FROM Book WHERE Title = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, title);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("IdBook");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return -1;
+    }
 }

@@ -80,6 +80,12 @@ public class HomeController {
     private MenuItem addBookMenuItem;
 
     @FXML
+    private MenuItem addExistingBookMenuItem;
+
+    @FXML
+    private MenuItem removeBookFromLibraryMenuItem;
+
+    @FXML
     private MenuItem logoutMenuItem;
 
     private boolean booksPanelVisible = true;
@@ -104,6 +110,8 @@ public class HomeController {
         setupShareLibraryMenuItem();
         setupDeleteLibraryMenuItem();
         setupAddBookMenuItem();
+        setupAddExistingBookMenuItem();
+        setupRemoveBookFromLibraryMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
     }
@@ -126,6 +134,128 @@ public class HomeController {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+            });
+        }
+    }
+
+    private void setupAddExistingBookMenuItem() {
+        if (addExistingBookMenuItem != null) {
+            addExistingBookMenuItem.setOnAction(e -> {
+                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                if (selectedLibrary == null) {
+                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria prima di aggiungere un libro.");
+                    return;
+                }
+                
+                LibrariesDAO libDAO = new LibrariesDAO();
+                Libraries library = libDAO.findByName(selectedLibrary);
+                if (library == null) return;
+                
+                // Ottieni tutti i libri dal DB
+                BookDAO bookDAO = new BookDAO();
+                List<Book> allBooks = bookDAO.findAll();
+                
+                // Ottieni i libri già nella libreria
+                List<Book> booksInLibrary = bookDAO.findByLibraryId(library.getIdLibrary());
+                List<String> titlesInLibrary = new ArrayList<>();
+                for (Book b : booksInLibrary) {
+                    titlesInLibrary.add(b.getTitle());
+                }
+                
+                // Filtra i libri disponibili (non ancora nella libreria)
+                List<String> availableBooks = new ArrayList<>();
+                for (Book b : allBooks) {
+                    if (!titlesInLibrary.contains(b.getTitle())) {
+                        availableBooks.add(b.getTitle());
+                    }
+                }
+                
+                if (availableBooks.isEmpty()) {
+                    showAlert("Nessun libro disponibile", "Tutti i libri sono già presenti in questa libreria.");
+                    return;
+                }
+                
+                // Dialog per selezionare il libro
+                javafx.scene.control.ChoiceDialog<String> dialog = 
+                    new javafx.scene.control.ChoiceDialog<>(availableBooks.get(0), availableBooks);
+                dialog.setTitle("Aggiungi Libro alla Libreria");
+                dialog.setHeaderText("Aggiungi un libro esistente a \"" + selectedLibrary + "\"");
+                dialog.setContentText("Seleziona libro:");
+                
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresent(bookTitle -> {
+                    Book book = bookDAO.findByTitle(bookTitle);
+                    if (book != null) {
+                        // Trova l'ID del libro
+                        int idBook = bookDAO.findIdByTitle(bookTitle);
+                        if (idBook != -1) {
+                            BookLibDAO bookLibDAO = new BookLibDAO();
+                            bookLibDAO.insert(new com.library.models.BookLib(idBook, library.getIdLibrary()));
+                            showAlert("Successo", "Libro aggiunto alla libreria!");
+                            // Ricarica i libri della libreria
+                            loadBooksForLibrary(selectedLibrary);
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    private void setupRemoveBookFromLibraryMenuItem() {
+        if (removeBookFromLibraryMenuItem != null) {
+            removeBookFromLibraryMenuItem.setOnAction(e -> {
+                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                if (selectedLibrary == null) {
+                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria prima di rimuovere un libro.");
+                    return;
+                }
+                
+                LibrariesDAO libDAO = new LibrariesDAO();
+                Libraries library = libDAO.findByName(selectedLibrary);
+                if (library == null) return;
+                
+                // Ottieni i libri nella libreria
+                BookDAO bookDAO = new BookDAO();
+                List<Book> booksInLibrary = bookDAO.findByLibraryId(library.getIdLibrary());
+                
+                if (booksInLibrary.isEmpty()) {
+                    showAlert("Nessun libro", "Non ci sono libri in questa libreria.");
+                    return;
+                }
+                
+                List<String> bookTitles = new ArrayList<>();
+                for (Book b : booksInLibrary) {
+                    bookTitles.add(b.getTitle());
+                }
+                
+                // Dialog per selezionare il libro da rimuovere
+                javafx.scene.control.ChoiceDialog<String> dialog = 
+                    new javafx.scene.control.ChoiceDialog<>(bookTitles.get(0), bookTitles);
+                dialog.setTitle("Rimuovi Libro dalla Libreria");
+                dialog.setHeaderText("Rimuovi un libro da \"" + selectedLibrary + "\"");
+                dialog.setContentText("Seleziona libro:");
+                
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresent(bookTitle -> {
+                    // Conferma rimozione
+                    javafx.scene.control.Alert confirmAlert = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.CONFIRMATION);
+                    confirmAlert.setTitle("Conferma Rimozione");
+                    confirmAlert.setHeaderText("Rimuovere \"" + bookTitle + "\"?");
+                    confirmAlert.setContentText("Il libro verrà rimosso solo da questa libreria, non dal database.");
+                    
+                    Optional<javafx.scene.control.ButtonType> confirmResult = confirmAlert.showAndWait();
+                    if (confirmResult.isPresent() && confirmResult.get() == javafx.scene.control.ButtonType.OK) {
+                        int idBook = bookDAO.findIdByTitle(bookTitle);
+                        if (idBook != -1) {
+                            BookLibDAO bookLibDAO = new BookLibDAO();
+                            bookLibDAO.deleteByBookAndLibrary(idBook, library.getIdLibrary());
+                            showAlert("Successo", "Libro rimosso dalla libreria!");
+                            // Ricarica i libri della libreria
+                            loadBooksForLibrary(selectedLibrary);
+                        }
+                    }
+                });
             });
         }
     }

@@ -51,4 +51,16 @@ public class BookLibDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public void deleteByBookAndLibrary(int idBook, int idLibrary) {
+        String sql = "DELETE FROM BookLib WHERE IdBook = ? AND IdLibrary = ?";
+        try (Connection conn = DbUtils.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idBook);
+            ps.setInt(2, idLibrary);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
