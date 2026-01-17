@@ -80,4 +80,16 @@ public class LibAccessDAO {
         }
         return accesses;
     }
+
+    public void deleteByUserAndLibrary(int idUser, int idLibrary) {
+        String sql = "DELETE FROM LibAccess WHERE IdUser = ? AND IdLibrary = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idLibrary);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

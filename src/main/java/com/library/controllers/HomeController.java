@@ -17,7 +17,9 @@ import org.icepdf.ri.common.SwingController;
 import org.icepdf.ri.common.SwingViewBuilder;
 
 import com.library.dao.BookDAO;
+import com.library.dao.BookLibDAO;
 import com.library.dao.LibAccessDAO;
+import com.library.dao.LibUserDAO;
 import com.library.dao.LibrariesDAO;
 import com.library.models.Book;
 import com.library.models.LibAccess;
@@ -69,6 +71,12 @@ public class HomeController {
     private MenuItem addLibraryMenuItem;
 
     @FXML
+    private MenuItem shareLibraryMenuItem;
+
+    @FXML
+    private MenuItem deleteLibraryMenuItem;
+
+    @FXML
     private MenuItem addBookMenuItem;
 
     @FXML
@@ -93,6 +101,8 @@ public class HomeController {
         setupToggleButton();
         setupBookSelection();
         setupAddLibraryMenuItem();
+        setupShareLibraryMenuItem();
+        setupDeleteLibraryMenuItem();
         setupAddBookMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
@@ -172,6 +182,123 @@ public class HomeController {
                 });
             });
         }
+    }
+
+    private void setupShareLibraryMenuItem() {
+        if (shareLibraryMenuItem != null) {
+            shareLibraryMenuItem.setOnAction(e -> {
+                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                if (selectedLibrary == null) {
+                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria da condividere.");
+                    return;
+                }
+                
+                LibrariesDAO libDAO = new LibrariesDAO();
+                Libraries library = libDAO.findByName(selectedLibrary);
+                if (library == null) return;
+                
+                // Ottieni lista di tutti gli utenti tranne quello corrente
+                LibUserDAO userDAO = new LibUserDAO();
+                List<LibUser> allUsers = userDAO.findAll();
+                List<String> usernames = new ArrayList<>();
+                for (LibUser user : allUsers) {
+                    if (user.getIdUser() != currentUser.getIdUser()) {
+                        usernames.add(user.getUsername());
+                    }
+                }
+                
+                if (usernames.isEmpty()) {
+                    showAlert("Nessun utente disponibile", "Non ci sono altri utenti con cui condividere.");
+                    return;
+                }
+                
+                // Dialog per selezionare l'utente
+                javafx.scene.control.ChoiceDialog<String> dialog = 
+                    new javafx.scene.control.ChoiceDialog<>(usernames.get(0), usernames);
+                dialog.setTitle("Condividi Libreria");
+                dialog.setHeaderText("Condividi \"" + selectedLibrary + "\" con:");
+                dialog.setContentText("Seleziona utente:");
+                
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresent(username -> {
+                    LibUser targetUser = allUsers.stream()
+                        .filter(u -> u.getUsername().equals(username))
+                        .findFirst().orElse(null);
+                    
+                    if (targetUser != null) {
+                        LibAccessDAO accessDAO = new LibAccessDAO();
+                        // Verifica se l'utente ha già accesso
+                        boolean alreadyHasAccess = accessDAO.findByUserId(targetUser.getIdUser())
+                            .stream().anyMatch(a -> a.getIdLibrary() == library.getIdLibrary());
+                        
+                        if (alreadyHasAccess) {
+                            showAlert("Già condivisa", "L'utente ha già accesso a questa libreria.");
+                        } else {
+                            accessDAO.insert(new LibAccess(targetUser.getIdUser(), library.getIdLibrary()));
+                            showAlert("Successo", "Libreria condivisa con " + username + "!");
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    private void setupDeleteLibraryMenuItem() {
+        if (deleteLibraryMenuItem != null) {
+            deleteLibraryMenuItem.setOnAction(e -> {
+                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                if (selectedLibrary == null) {
+                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria da eliminare.");
+                    return;
+                }
+                
+                LibrariesDAO libDAO = new LibrariesDAO();
+                Libraries library = libDAO.findByName(selectedLibrary);
+                if (library == null) return;
+                
+                // Conferma eliminazione
+                javafx.scene.control.Alert confirmAlert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.CONFIRMATION);
+                confirmAlert.setTitle("Conferma Eliminazione");
+                confirmAlert.setHeaderText("Eliminare \"" + selectedLibrary + "\"?");
+                confirmAlert.setContentText("Questa azione rimuoverà il tuo accesso alla libreria.");
+                
+                Optional<javafx.scene.control.ButtonType> result = confirmAlert.showAndWait();
+                if (result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK) {
+                    LibAccessDAO accessDAO = new LibAccessDAO();
+                    
+                    // Rimuovi l'accesso dell'utente corrente
+                    accessDAO.deleteByUserAndLibrary(currentUser.getIdUser(), library.getIdLibrary());
+                    
+                    // Verifica se altri utenti hanno ancora accesso
+                    List<LibAccess> remainingAccess = accessDAO.findByLibraryId(library.getIdLibrary());
+                    
+                    if (remainingAccess.isEmpty()) {
+                        // Nessun altro ha accesso, elimina completamente
+                        BookLibDAO bookLibDAO = new BookLibDAO();
+                        bookLibDAO.deleteByLibraryId(library.getIdLibrary());
+                        libDAO.delete(library.getIdLibrary());
+                        showAlert("Successo", "Libreria eliminata completamente.");
+                    } else {
+                        showAlert("Successo", "Il tuo accesso alla libreria è stato rimosso.");
+                    }
+                    
+                    // Aggiorna la lista
+                    loadLibraries();
+                    booksList.getItems().clear();
+                    showDefaultMessage();
+                }
+            });
+        }
+    }
+
+    private void showAlert(String title, String content) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+            javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     // Metodo per ricevere l'utente loggato

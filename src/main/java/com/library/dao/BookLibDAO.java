@@ -40,4 +40,15 @@ public class BookLibDAO {
         }
         return list;
     }
+
+    public void deleteByLibraryId(int idLibrary) {
+        String sql = "DELETE FROM BookLib WHERE IdLibrary = ?";
+        try (Connection conn = DbUtils.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idLibrary);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -14,6 +14,8 @@
             </Menu>
             <Menu text="Libreria">
                 <MenuItem fx:id="addLibraryMenuItem" text="Aggiungi Libreria" />
+                <MenuItem fx:id="shareLibraryMenuItem" text="Condividi Libreria" />
+                <MenuItem fx:id="deleteLibraryMenuItem" text="Elimina Libreria" />
             </Menu>
             <Menu text="Libro">
                 <MenuItem fx:id="addBookMenuItem" text="Aggiungi Libro" />

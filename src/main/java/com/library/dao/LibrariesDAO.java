@@ -78,4 +78,15 @@ public class LibrariesDAO {
         return null;
     }
 
+    public void delete(int idLibrary) {
+        String sql = "DELETE FROM Libraries WHERE IdLibrary = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idLibrary);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
