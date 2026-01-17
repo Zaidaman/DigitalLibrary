@@ -45,15 +45,18 @@ public class LoginController {
         // Verifica campi vuoti usando switch
         String emptyFieldsState = (usernameEmpty ? "U" : "") + (passwordEmpty ? "P" : "");
         switch (emptyFieldsState) {
-            case "UP":
+            case "UP" -> {
                 messageLabel.setText("Inserire username e password.");
                 return;
-            case "U":
+            }
+            case "U" -> {
                 messageLabel.setText("Inserire username.");
                 return;
-            case "P":
+            }
+            case "P" -> {
                 messageLabel.setText("Inserire password.");
                 return;
+            }
         }
 
         // Cerca l'utente per username
@@ -67,19 +70,13 @@ public class LoginController {
         // Verifica credenziali usando switch
         String credentialsState = (usernameValid ? "" : "U") + (passwordValid ? "" : "P");
         switch (credentialsState) {
-            case "UP":
-                messageLabel.setText("Username e password non validi.");
-                break;
-            case "U":
-                messageLabel.setText("Username non valido.");
-                break;
-            case "P":
-                messageLabel.setText("Password non valida.");
-                break;
-            default:
+            case "UP" -> messageLabel.setText("Username e password non validi.");
+            case "U" -> messageLabel.setText("Username non valido.");
+            case "P" -> messageLabel.setText("Password non valida.");
+            default -> {
                 messageLabel.setText("Login effettuato!");
                 goToHome();
-                break;
+            }
         }
     }
 
@@ -94,15 +91,18 @@ public class LoginController {
         // Verifica campi vuoti usando switch
         String emptyFieldsState = (usernameEmpty ? "U" : "") + (passwordEmpty ? "P" : "");
         switch (emptyFieldsState) {
-            case "UP":
+            case "UP" -> {
                 messageLabel.setText("Inserire username e password.");
                 return;
-            case "U":
+            }
+            case "U" -> {
                 messageLabel.setText("Inserire username.");
                 return;
-            case "P":
+            }
+            case "P" -> {
                 messageLabel.setText("Inserire password.");
                 return;
+            }
         }
 
         // Verifica se username esiste già
