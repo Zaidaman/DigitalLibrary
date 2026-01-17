@@ -10,7 +10,7 @@
     <top>
         <MenuBar>
             <Menu text="Utente">
-                <!-- Funzionalità future per l'utente -->
+                <MenuItem fx:id="logoutMenuItem" text="Logout" />
             </Menu>
             <Menu text="Libreria">
                 <MenuItem fx:id="addLibraryMenuItem" text="Aggiungi Libreria" />

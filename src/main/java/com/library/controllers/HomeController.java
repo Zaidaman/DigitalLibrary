@@ -71,6 +71,9 @@ public class HomeController {
     @FXML
     private MenuItem addBookMenuItem;
 
+    @FXML
+    private MenuItem logoutMenuItem;
+
     private boolean booksPanelVisible = true;
 
     private LibUser currentUser;
@@ -91,6 +94,7 @@ public class HomeController {
         setupBookSelection();
         setupAddLibraryMenuItem();
         setupAddBookMenuItem();
+        setupLogoutMenuItem();
         showDefaultMessage();
     }
     private void setupAddBookMenuItem() {
@@ -111,6 +115,30 @@ public class HomeController {
                     stage.showAndWait();
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                }
+            });
+        }
+    }
+
+    private void setupLogoutMenuItem() {
+        if (logoutMenuItem != null) {
+            logoutMenuItem.setOnAction(e -> {
+                try {
+                    // Ottieni lo stage corrente
+                    Stage currentStage = (Stage) contentArea.getScene().getWindow();
+                    
+                    // Carica la schermata di login
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login-view.fxml"));
+                    Scene loginScene = new Scene(loader.load(), 400, 350);
+                    
+                    // Imposta la nuova scena
+                    currentStage.setScene(loginScene);
+                    currentStage.setTitle("Login - Digital Library");
+                    
+                    // Reset dell'utente corrente
+                    currentUser = null;
+                } catch (IOException ex) {
+                    System.err.println("Errore durante il logout: " + ex.getMessage());
                 }
             });
         }
