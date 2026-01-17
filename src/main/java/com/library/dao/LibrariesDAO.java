@@ -12,15 +12,22 @@ import com.library.models.Libraries;
 import com.library.utils.DbUtils;
 
 public class LibrariesDAO {
-    public void insert(com.library.models.Libraries library) {
+    public int insert(com.library.models.Libraries library) {
         String sql = "INSERT INTO Libraries (LibName) VALUES (?)";
         try (java.sql.Connection conn = com.library.utils.DbUtils.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, library.getLibName());
             ps.executeUpdate();
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         } catch (java.sql.SQLException e) {
             throw new RuntimeException(e);
         }
+        return -1;
     }
     public List<Libraries> findAll() {
         List<Libraries> libraries = new ArrayList<>();

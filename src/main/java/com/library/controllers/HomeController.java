@@ -296,19 +296,19 @@ public class HomeController {
                 result.ifPresent(libName -> {
                     if (libName.trim().isEmpty()) return;
                     LibrariesDAO librariesDAO = new LibrariesDAO();
-                    // Calcola nuovo id manualmente
-                    int newId = 1;
-                    List<Libraries> allLibs = librariesDAO.findAll();
-                    for (Libraries l : allLibs) {
-                        if (l.getIdLibrary() >= newId) newId = l.getIdLibrary() + 1;
+                    // Lascia che MySQL gestisca l'auto-increment e recupera l'ID generato
+                    Libraries newLib = new Libraries(0, libName.trim());
+                    int generatedId = librariesDAO.insert(newLib);
+                    
+                    if (generatedId != -1) {
+                        // Associa all'utente corrente usando l'ID generato
+                        LibAccessDAO accessDAO = new LibAccessDAO();
+                        accessDAO.insert(new LibAccess(currentUser.getIdUser(), generatedId));
+                        // Aggiorna lista
+                        loadLibraries();
+                    } else {
+                        showAlert("Errore", "Errore durante la creazione della libreria.");
                     }
-                    Libraries newLib = new Libraries(newId, libName.trim());
-                    librariesDAO.insert(newLib);
-                    // Associa all'utente corrente
-                    LibAccessDAO accessDAO = new LibAccessDAO();
-                    accessDAO.insert(new LibAccess(currentUser.getIdUser(), newId));
-                    // Aggiorna lista
-                    loadLibraries();
                 });
             });
         }
