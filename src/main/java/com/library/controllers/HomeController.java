@@ -32,6 +32,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -65,10 +66,10 @@ public class HomeController {
     private Button toggleBooksBtn;
 
     @FXML
-    private Button addLibraryBtn;
+    private MenuItem addLibraryMenuItem;
 
     @FXML
-    private Button addBookBtn;
+    private MenuItem addBookMenuItem;
 
     private boolean booksPanelVisible = true;
 
@@ -88,13 +89,13 @@ public class HomeController {
         booksPanelVisible = true;
         setupToggleButton();
         setupBookSelection();
-        setupAddLibraryBtn();
-        setupAddBookBtn();
+        setupAddLibraryMenuItem();
+        setupAddBookMenuItem();
         showDefaultMessage();
     }
-    private void setupAddBookBtn() {
-        if (addBookBtn != null) {
-            addBookBtn.setOnAction(e -> {
+    private void setupAddBookMenuItem() {
+        if (addBookMenuItem != null) {
+            addBookMenuItem.setOnAction(e -> {
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add-book-view.fxml"));
                     Parent root = loader.load();
@@ -115,9 +116,9 @@ public class HomeController {
         }
     }
 
-    private void setupAddLibraryBtn() {
-        if (addLibraryBtn != null) {
-            addLibraryBtn.setOnAction(e -> {
+    private void setupAddLibraryMenuItem() {
+        if (addLibraryMenuItem != null) {
+            addLibraryMenuItem.setOnAction(e -> {
                 if (currentUser == null) return;
                 TextInputDialog dialog = new TextInputDialog();
                 dialog.setTitle("Nuova Libreria");
