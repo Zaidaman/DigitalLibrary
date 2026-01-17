@@ -29,18 +29,57 @@ public class LoginController {
     private final LibUserDAO userDAO = new LibUserDAO();
 
     @FXML
+    private void initialize() {
+        // Imposta il bottone di login come default (si attiva premendo Enter)
+        loginButton.setDefaultButton(true);
+    }
+
+    @FXML
     private void onLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        boolean found = userDAO.findAll().stream()
-            .anyMatch(u -> u.getUsername().equals(username) && u.getUserPass().equals(password));
+        boolean usernameEmpty = username.isEmpty();
+        boolean passwordEmpty = password.isEmpty();
 
-        if (found) {
-            messageLabel.setText("Login effettuato!");
-            goToHome();
-        } else {
-            messageLabel.setText("Credenziali non valide.");
+        // Verifica campi vuoti usando switch
+        String emptyFieldsState = (usernameEmpty ? "U" : "") + (passwordEmpty ? "P" : "");
+        switch (emptyFieldsState) {
+            case "UP":
+                messageLabel.setText("Inserire username e password.");
+                return;
+            case "U":
+                messageLabel.setText("Inserire username.");
+                return;
+            case "P":
+                messageLabel.setText("Inserire password.");
+                return;
+        }
+
+        // Cerca l'utente per username
+        LibUser user = userDAO.findAll().stream()
+            .filter(u -> u.getUsername().equals(username))
+            .findFirst().orElse(null);
+
+        boolean usernameValid = user != null;
+        boolean passwordValid = user != null && user.getUserPass().equals(password);
+
+        // Verifica credenziali usando switch
+        String credentialsState = (usernameValid ? "" : "U") + (passwordValid ? "" : "P");
+        switch (credentialsState) {
+            case "UP":
+                messageLabel.setText("Username e password non validi.");
+                break;
+            case "U":
+                messageLabel.setText("Username non valido.");
+                break;
+            case "P":
+                messageLabel.setText("Password non valida.");
+                break;
+            default:
+                messageLabel.setText("Login effettuato!");
+                goToHome();
+                break;
         }
     }
 
@@ -49,11 +88,24 @@ public class LoginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            messageLabel.setText("Inserisci username e password.");
-            return;
+        boolean usernameEmpty = username.isEmpty();
+        boolean passwordEmpty = password.isEmpty();
+
+        // Verifica campi vuoti usando switch
+        String emptyFieldsState = (usernameEmpty ? "U" : "") + (passwordEmpty ? "P" : "");
+        switch (emptyFieldsState) {
+            case "UP":
+                messageLabel.setText("Inserire username e password.");
+                return;
+            case "U":
+                messageLabel.setText("Inserire username.");
+                return;
+            case "P":
+                messageLabel.setText("Inserire password.");
+                return;
         }
 
+        // Verifica se username esiste già
         boolean exists = userDAO.findAll().stream()
             .anyMatch(u -> u.getUsername().equals(username));
 
