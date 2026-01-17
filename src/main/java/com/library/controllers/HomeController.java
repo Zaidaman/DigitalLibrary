@@ -296,18 +296,37 @@ public class HomeController {
                 result.ifPresent(libName -> {
                     if (libName.trim().isEmpty()) return;
                     LibrariesDAO librariesDAO = new LibrariesDAO();
-                    // Lascia che MySQL gestisca l'auto-increment e recupera l'ID generato
-                    Libraries newLib = new Libraries(0, libName.trim());
-                    int generatedId = librariesDAO.insert(newLib);
                     
-                    if (generatedId != -1) {
-                        // Associa all'utente corrente usando l'ID generato
+                    // Verifica se la libreria esiste già
+                    Libraries existingLib = librariesDAO.findByName(libName.trim());
+                    
+                    if (existingLib != null) {
+                        // La libreria esiste già, verifica se l'utente ha già accesso
                         LibAccessDAO accessDAO = new LibAccessDAO();
-                        accessDAO.insert(new LibAccess(currentUser.getIdUser(), generatedId));
-                        // Aggiorna lista
-                        loadLibraries();
+                        boolean hasAccess = accessDAO.findByUserId(currentUser.getIdUser())
+                            .stream()
+                            .anyMatch(a -> a.getIdLibrary() == existingLib.getIdLibrary());
+                        
+                        if (hasAccess) {
+                            showAlert("Libreria già presente", "Hai già accesso a una libreria con questo nome.");
+                        } else {
+                            showAlert("Libreria già esistente", "Una libreria con questo nome esiste già. Scegli un nome diverso.");
+                        }
                     } else {
-                        showAlert("Errore", "Errore durante la creazione della libreria.");
+                        // La libreria non esiste, creala
+                        Libraries newLib = new Libraries(0, libName.trim());
+                        int generatedId = librariesDAO.insert(newLib);
+                        
+                        if (generatedId != -1) {
+                            // Associa all'utente corrente usando l'ID generato
+                            LibAccessDAO accessDAO = new LibAccessDAO();
+                            accessDAO.insert(new LibAccess(currentUser.getIdUser(), generatedId));
+                            // Aggiorna lista
+                            loadLibraries();
+                            showAlert("Successo", "Libreria creata con successo!");
+                        } else {
+                            showAlert("Errore", "Errore durante la creazione della libreria.");
+                        }
                     }
                 });
             });
