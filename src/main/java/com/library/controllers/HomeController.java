@@ -129,8 +129,7 @@ public class HomeController {
     private List<Book> currentLibraryBooks = new ArrayList<>();
 
     private String selectedSort = "NONE";
-    private boolean filterPdf = false;
-    private boolean filterEpub = false;
+    private String activeFilterType = "NONE";
 
     @FXML
     public void initialize() {
@@ -149,8 +148,8 @@ public class HomeController {
         setupRemoveBookFromLibraryMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
-        setupSortDropdown();
-        setupFilterDropdown();
+        setupSort();
+        setupFilter();
         setupClearButton();
     }
     private void setupAddBookMenuItem() {
@@ -482,7 +481,7 @@ public class HomeController {
         }
     }
 
-   private void setupSortDropdown() {
+   private void setupSort() {
         sortCombo.getItems().addAll(
                 "Nessuno",
                 "Titolo A → Z",
@@ -497,14 +496,29 @@ public class HomeController {
         });
     }
 
-   private void setupFilterDropdown() {
+    private void setupFilter() {
         pdfFilterItem.setOnAction(e -> {
-            filterPdf = pdfFilterItem.isSelected();
+
+            if (pdfFilterItem.isSelected()) {
+                 epubFilterItem.setSelected(false); // disattiva altro
+                activeFilterType = "PDF";
+            } else {
+                activeFilterType = "NONE";
+            }
+                
             applyFiltersAndSort();
         });
 
         epubFilterItem.setOnAction(e -> {
-            filterEpub = epubFilterItem.isSelected();
+            if (epubFilterItem.isSelected()) {
+
+                pdfFilterItem.setSelected(false); // disattiva altro
+                activeFilterType = "EPUB";
+
+            } else {
+                activeFilterType = "NONE";
+            }
+
             applyFiltersAndSort();
         });
     }
@@ -512,13 +526,14 @@ public class HomeController {
     private void setupClearButton() {
         clearFiltersBtn.setOnAction(e -> {
                 selectedSort = "NONE";
-                filterPdf = false;
-                filterEpub = false;
+                activeFilterType = "NONE";
 
                 sortCombo.getSelectionModel().selectFirst();
 
                 pdfFilterItem.setSelected(false);
                 epubFilterItem.setSelected(false);
+
+                filterMenuBtn.setText("Filtra");
 
                 refreshBooksList(currentLibraryBooks);
             });
@@ -532,18 +547,19 @@ public class HomeController {
 
         // -------- FILTRI --------
         result.removeIf(book -> {
+            String path = book.getFilePath().toLowerCase();
 
-            boolean remove = false;
-
-            if (filterPdf && !book.getFilePath().toLowerCase().endsWith(".pdf")) {
-                remove = true;
+            if ("PDF".equals(activeFilterType)) {
+                filterMenuBtn.setText("PDF");
+                return !path.endsWith(".pdf");
             }
 
-            if (filterEpub && !book.getFilePath().toLowerCase().endsWith(".epub")) {
-                remove = true;
+            if ("EPUB".equals(activeFilterType)) {
+                filterMenuBtn.setText("EPUB");
+                return !path.endsWith(".epub");
             }
 
-            return remove;
+            return false;
         });
 
         // -------- SORT --------
