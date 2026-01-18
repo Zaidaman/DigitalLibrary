@@ -69,12 +69,6 @@ public class HomeController {
     private StackPane contentArea;
 
     @FXML
-    private Button prevBtn;
-
-    @FXML
-    private Button nextBtn;
-
-    @FXML
     private Button toggleBooksBtn;
 
     @FXML
@@ -122,10 +116,6 @@ public class HomeController {
     private BookDisplayStrategy pdfStrategy = new PdfDisplayStrategy();
     private BookDisplayStrategy epubStrategy = new EpubDisplayStrategy();
 
-    private List<Resource> epubChapters;       // Lista dei capitoli dell'EPUB
-    private int currentChapterIndex = 0;       // Capitolo attuale
-    private File tempDirForEpub;               // Cartella temporanea per i file estratti
-
     private List<Book> currentLibraryBooks = new ArrayList<>();
 
     private String selectedSort = "NONE";
@@ -152,6 +142,7 @@ public class HomeController {
         setupFilter();
         setupClearButton();
     }
+
     private void setupAddBookMenuItem() {
         if (addBookMenuItem != null) {
             addBookMenuItem.setOnAction(e -> {
@@ -167,7 +158,13 @@ public class HomeController {
                     stage.setTitle("Aggiungi un nuovo libro");
                     stage.initModality(Modality.APPLICATION_MODAL);
                     stage.setScene(new Scene(root));
-                    stage.showAndWait();
+                    stage.showAndWait(); // Aspetta che la finestra si chiuda
+                    
+                    // Dopo la chiusura, ricarica i libri della libreria selezionata
+                    String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                    if (selectedLibrary != null) {
+                        loadBooksForLibrary(selectedLibrary);
+                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -541,8 +538,6 @@ public class HomeController {
 
         private void applyFiltersAndSort() {
 
-        resetEpubNavigation();
-
         List<Book> result = new ArrayList<>(currentLibraryBooks);
 
         // -------- FILTRI --------
@@ -614,8 +609,6 @@ public class HomeController {
     }
 
     private void loadBooksForLibrary(String libraryName) {
-        resetEpubNavigation();
-
         LibrariesDAO libDAO = DAOFactory.getInstance().getLibrariesDAO();
         Libraries library = libDAO.findByName(libraryName);
         if (library == null) return;
@@ -636,8 +629,6 @@ public class HomeController {
     }
 
     private void refreshBooksList(List<Book> books) {
-        resetEpubNavigation();
-
         booksList.getItems().clear();
 
         if (books.isEmpty()) {
@@ -668,157 +659,16 @@ public class HomeController {
         });
     }
 
-    private void resetEpubNavigation() {
-        prevBtn.setVisible(false);
-        nextBtn.setVisible(false);
-        epubChapters = null;
-        currentChapterIndex = 0;
-        tempDirForEpub = null;
-    }
-
-    public void showEpub(WebView webView, String epubFileName) {
-        try {
-            resetEpubNavigation();
-
-            // Prima prova a caricare da library-data/ (file aggiunti dall'utente)
-            File epubFile = new File("library-data/epub/" + epubFileName);
-            InputStream epubStream;
-            
-            if (epubFile.exists()) {
-                epubStream = new java.io.FileInputStream(epubFile);
-            } else {
-                // Altrimenti carica dal classpath (risorse statiche)
-                epubStream = getClass().getClassLoader().getResourceAsStream("epub/" + epubFileName);
-            }
-            
-            if (epubStream == null) {
-                System.out.println("❌ EPUB non trovato: " + epubFileName);
-                return;
-            }
-
-            nl.siegmann.epublib.domain.Book epub = new EpubReader().readEpub(epubStream);
-
-            // Estrai cartella temporanea
-            tempDirForEpub = Files.createTempDirectory("epub_view_").toFile();
-            tempDirForEpub.deleteOnExit();
-
-            for (Resource res : epub.getResources().getAll()) {
-                File outFile = new File(tempDirForEpub, res.getHref());
-                outFile.getParentFile().mkdirs();
-                try (FileOutputStream fos = new FileOutputStream(outFile)) {
-                    fos.write(res.getData());
-                }
-            }
-
-            // ### COPERTINA ###
-            // Cerca tra le risorse la prima immagine che sembra essere la copertina
-            File coverFile = null;
-            for (Resource res : epub.getResources().getAll()) {
-                String href = res.getHref().toLowerCase();
-                // filtra per immagini e parole chiave comuni per cover
-                if ((href.endsWith(".jpg") || href.endsWith(".jpeg") || href.endsWith(".png"))
-                        && href.contains("cover")) {
-                    coverFile = new File(tempDirForEpub, res.getHref());
-                    break;
-                }
-            }
-
-            // Se trovi una copertina, caricala prima
-            if (coverFile != null && coverFile.exists()) {
-                webView.getEngine().load(coverFile.toURI().toString());
-
-                applyMargin(webView);
-            } else {
-                System.out.println("📌 Copertina non trovata o non nominata come cover");
-            }
-
-            // ## TROVA CAPITOLI ##
-            epubChapters = new ArrayList<>();
-            for (Resource res : epub.getContents()) {
-                String href = res.getHref().toLowerCase();
-                if (!href.contains("cover") && !href.contains("titlepage")
-                        && (href.endsWith(".html") || href.endsWith(".xhtml"))) {
-                    String content = new String(res.getData(), StandardCharsets.UTF_8);
-                    if (content.trim().length() > 50) {
-                        epubChapters.add(res);
-                    }
-                }
-            }
-
-            // Mostra i pulsanti se ci sono capitoli
-            if (!epubChapters.isEmpty()) {
-                prevBtn.setVisible(true);
-                nextBtn.setVisible(true);
-                currentChapterIndex = 0;
-                setupNavigation(webView);
-            } else {
-                System.out.println("❌ Nessun capitolo html reale trovato nell'EPUB");
-            }
-
-        } catch (IOException | NullPointerException e) {
-            System.err.println("Errore durante il caricamento dell'EPUB: " + e.getMessage());
-            resetEpubNavigation();
-        }
-    }
-
-    private void applyMargin(WebView webView) {
-        webView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-            if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
-                webView.getEngine().executeScript(
-                    "document.body.style.margin='20px';" +
-                    "document.body.style.padding='10px';"
-                );
-            }
-        });
-    }
-
-    private void loadChapter(WebView webView, Resource chapter) {
-        try {
-            File chapterFile = new File(tempDirForEpub, chapter.getHref());
-            webView.getEngine().load(chapterFile.toURI().toString());
-            applyMargin(webView);
-        } catch (NullPointerException e) {
-            System.err.println("Errore durante il caricamento del capitolo EPUB: " + e.getMessage());
-        }
-    }
-
-    private void setupNavigation(WebView webView) {
-        prevBtn.setOnAction(e -> {
-            if (epubChapters != null && currentChapterIndex > 0) {
-                currentChapterIndex--;
-                loadChapter(webView, epubChapters.get(currentChapterIndex));
-            }
-        });
-
-        nextBtn.setOnAction(e -> {
-            if (epubChapters != null && currentChapterIndex < epubChapters.size() - 1) {
-                currentChapterIndex++;
-                loadChapter(webView, epubChapters.get(currentChapterIndex));
-            }
-        });
-    }
-
     private void setupBookSelection() {
         booksList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.equals("Nessun libro presente in questa libreria.")) {
                 BookDAO bookDAO = new BookDAO();
-                Book book = bookDAO.findByTitle(newVal); // restituisce filePath relativo
+                Book book = bookDAO.findByTitle(newVal);
 
                 if (book != null && book.getFilePath() != null && !book.getFilePath().isEmpty()) {
-                    if (book.getFilePath().endsWith(".pdf")) {
-                        showPdfFromResource(book.getFilePath());
-                        resetEpubNavigation();
-                    } else if (book.getFilePath().endsWith(".epub")) {
-                        // Usa il WebView già presente nella UI
-                        WebView webView = new WebView();
-                        contentArea.getChildren().setAll(webView); // mostra il WebView nel contentArea
-                        showEpub(webView, new File(book.getFilePath()).getName());
-                    }
-                } else {
-                    showDefaultMessage();
+                    BookViewerWindow viewer = new BookViewerWindow(book);
+                    viewer.show();
                 }
-            } else {
-                showDefaultMessage();
             }
         });
     }
@@ -827,49 +677,5 @@ public class HomeController {
         Label defaultLabel = new Label("Benvenuto nella tua Libreria Digitale!");
         defaultLabel.setStyle("-fx-font-size: 20px;");
         contentArea.getChildren().setAll(defaultLabel);
-    }
-
-    private void showPdfFromResource(String resourcePath) {
-        try {
-            // Prima prova a caricare da library-data/ (file aggiunti dall'utente)
-            File pdfFile = new File("library-data/" + resourcePath);
-            InputStream pdfStream;
-            
-            if (pdfFile.exists()) {
-                pdfStream = new java.io.FileInputStream(pdfFile);
-            } else {
-                // Altrimenti carica dal classpath (risorse statiche)
-                pdfStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
-            }
-            
-            if (pdfStream == null) {
-                System.out.println("PDF non trovato: " + resourcePath);
-                showDefaultMessage();
-                return;
-            }
-
-            // Crea un file temporaneo leggibile da IcePDF
-            File tempFile = File.createTempFile("temp_pdf_", ".pdf");
-            tempFile.deleteOnExit();
-            Files.copy(pdfStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-            // IcePDF
-            SwingController controller = new SwingController();
-            SwingViewBuilder factory = new SwingViewBuilder(controller);
-            JPanel viewerPanel = factory.buildViewerPanel();
-            controller.openDocument(tempFile.getAbsolutePath());
-
-            SwingNode swingNode = new SwingNode();
-            swingNode.setContent(viewerPanel);
-
-            contentArea.getChildren().setAll(swingNode);
-
-        } catch (NullPointerException e) {
-            System.err.println("Errore: PDF non trovato o risorsa mancante: " + e.getMessage());
-            showDefaultMessage();
-        } catch (IOException e) {
-            System.err.println("Errore IO durante il caricamento del PDF: " + e.getMessage());
-            showDefaultMessage();
-        }
     }
 }
