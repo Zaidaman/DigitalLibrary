@@ -465,6 +465,7 @@ public class HomeController {
     }
 
     private void setupFilterButtons() {
+        resetEpubNavigation();
 
         filterPdfBtn.setOnAction(e -> {
             List<Book> filtered = new ArrayList<>();
@@ -533,6 +534,7 @@ public class HomeController {
     }
 
     private void loadBooksForLibrary(String libraryName) {
+        resetEpubNavigation();
 
         LibrariesDAO libDAO = new LibrariesDAO();
         Libraries library = libDAO.findByName(libraryName);
