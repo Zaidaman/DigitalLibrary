@@ -9,7 +9,7 @@
     <!-- Menu Bar in alto -->
     <top>
         <MenuBar>
-            <Menu text="Utente">
+            <Menu text="Impostazioni">
                 <MenuItem fx:id="logoutMenuItem" text="Logout" />
             </Menu>
             <Menu text="Libreria">
