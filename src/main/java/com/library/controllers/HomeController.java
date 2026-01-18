@@ -500,7 +500,7 @@ public class HomeController {
         pdfFilterItem.setOnAction(e -> {
 
             if (pdfFilterItem.isSelected()) {
-                 epubFilterItem.setSelected(false); // disattiva altro
+                epubFilterItem.setSelected(false);
                 activeFilterType = "PDF";
             } else {
                 activeFilterType = "NONE";
@@ -512,7 +512,7 @@ public class HomeController {
         epubFilterItem.setOnAction(e -> {
             if (epubFilterItem.isSelected()) {
 
-                pdfFilterItem.setSelected(false); // disattiva altro
+                pdfFilterItem.setSelected(false);
                 activeFilterType = "EPUB";
 
             } else {
