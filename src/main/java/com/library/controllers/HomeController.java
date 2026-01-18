@@ -88,6 +88,12 @@ public class HomeController {
     @FXML
     private MenuItem logoutMenuItem;
 
+    @FXML private Button sortAscBtn;
+    @FXML private Button sortDescBtn;
+    @FXML private Button filterPdfBtn;
+    @FXML private Button filterEpubBtn;
+    @FXML private Button filterAllBtn;
+
     private boolean booksPanelVisible = true;
 
     private LibUser currentUser;
@@ -96,6 +102,7 @@ public class HomeController {
     private int currentChapterIndex = 0;       // Capitolo attuale
     private File tempDirForEpub;               // Cartella temporanea per i file estratti
 
+    private List<Book> currentLibraryBooks = new ArrayList<>();
 
     @FXML
     public void initialize() {
@@ -114,6 +121,8 @@ public class HomeController {
         setupRemoveBookFromLibraryMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
+        setupSortButtons();
+        setupFilterButtons();
     }
     private void setupAddBookMenuItem() {
         if (addBookMenuItem != null) {
@@ -441,6 +450,51 @@ public class HomeController {
         }
     }
 
+    private void setupSortButtons() {
+        sortAscBtn.setOnAction(e -> {
+            List<Book> sorted = new ArrayList<>(currentLibraryBooks);
+            sorted.sort((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
+            refreshBooksList(sorted);
+        });
+
+        sortDescBtn.setOnAction(e -> {
+            List<Book> sorted = new ArrayList<>(currentLibraryBooks);
+            sorted.sort((a, b) -> b.getTitle().compareToIgnoreCase(a.getTitle()));
+            refreshBooksList(sorted);
+        });
+    }
+
+    private void setupFilterButtons() {
+
+        filterPdfBtn.setOnAction(e -> {
+            List<Book> filtered = new ArrayList<>();
+
+            for (Book b : currentLibraryBooks) {
+                if (b.getFilePath().toLowerCase().endsWith(".pdf")) {
+                    filtered.add(b);
+                }
+            }
+
+            refreshBooksList(filtered);
+        });
+
+        filterEpubBtn.setOnAction(e -> {
+            List<Book> filtered = new ArrayList<>();
+
+            for (Book b : currentLibraryBooks) {
+                if (b.getFilePath().toLowerCase().endsWith(".epub")) {
+                    filtered.add(b);
+                }
+            }
+
+            refreshBooksList(filtered);
+        });
+
+        filterAllBtn.setOnAction(e -> {
+            refreshBooksList(currentLibraryBooks);
+        });
+    }
+
     private void showAlert(String title, String content) {
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
             javafx.scene.control.Alert.AlertType.INFORMATION);
@@ -479,28 +533,37 @@ public class HomeController {
     }
 
     private void loadBooksForLibrary(String libraryName) {
+
         LibrariesDAO libDAO = new LibrariesDAO();
         Libraries library = libDAO.findByName(libraryName);
         if (library == null) return;
 
         BookDAO bookDAO = new BookDAO();
-        List<Book> books = bookDAO.findByLibraryId(library.getIdLibrary());
 
-        // mostra pannello libri
+        // Salva lista originale (serve per filtri/sort)
+        currentLibraryBooks = bookDAO.findByLibraryId(library.getIdLibrary());
+
+        // Aggiorna UI
+        refreshBooksList(currentLibraryBooks);
+
+        // Mostra pannello libri
         booksPanel.setVisible(true);
         booksPanel.setManaged(true);
         booksPanelVisible = true;
         toggleBooksBtn.setText("⮜");
+    }
 
+    private void refreshBooksList(List<Book> books) {
         booksList.getItems().clear();
+
         if (books.isEmpty()) {
             booksList.getItems().add("Nessun libro presente in questa libreria.");
             showDefaultMessage();
-        } else {
-            for (Book b : books) {
-                booksList.getItems().add(b.getTitle());
-            }
-            showDefaultMessage(); // messaggio di base
+            return;
+        }
+
+        for (Book b : books) {
+            booksList.getItems().add(b.getTitle());
         }
     }
 

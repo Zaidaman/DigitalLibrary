@@ -41,6 +41,13 @@
                 spacing="10"
                 style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-pref-width: 300;"
                 visible="false" managed="false">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Button text="A-Z" fx:id="sortAscBtn"/>
+                    <Button text="Z-A" fx:id="sortDescBtn"/>
+                    <Button text="PDF" fx:id="filterPdfBtn"/>
+                    <Button text="EPUB" fx:id="filterEpubBtn"/>
+                    <Button text="Tutti" fx:id="filterAllBtn"/>
+                </HBox>
                 <Label text="Libri della Libreria" style="-fx-font-size: 18px;" />
                 <ListView fx:id="booksList"/>
             </VBox>
