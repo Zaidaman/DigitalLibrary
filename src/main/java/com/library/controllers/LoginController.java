@@ -30,12 +30,14 @@ public class LoginController {
     private final LibUserDAO userDAO = DAOFactory.getInstance().getLibUserDAO();
 
     @FXML
+    @SuppressWarnings("unused")
     private void initialize() {
         // Imposta il bottone di login come default (si attiva premendo Enter)
         loginButton.setDefaultButton(true);
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void onLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
@@ -82,6 +84,7 @@ public class LoginController {
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void onRegister() {
         String username = usernameField.getText();
         String password = passwordField.getText();

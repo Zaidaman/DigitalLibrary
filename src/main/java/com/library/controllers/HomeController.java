@@ -1,21 +1,10 @@
 package com.library.controllers;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.swing.JPanel;
-
-import org.icepdf.ri.common.SwingController;
-import org.icepdf.ri.common.SwingViewBuilder;
 
 import com.library.dao.BookDAO;
 import com.library.dao.BookLibDAO;
@@ -27,13 +16,8 @@ import com.library.models.Book;
 import com.library.models.LibAccess;
 import com.library.models.LibUser;
 import com.library.models.Libraries;
-import com.library.observers.LibraryObserver;
 import com.library.observers.LibrarySubject;
-import com.library.strategies.BookDisplayStrategy;
-import com.library.strategies.PdfDisplayStrategy;
-import com.library.strategies.EpubDisplayStrategy;
 
-import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -48,11 +32,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import nl.siegmann.epublib.domain.Resource;
-import nl.siegmann.epublib.epub.EpubReader;
 
 public class HomeController {
 
@@ -110,11 +91,7 @@ public class HomeController {
     private boolean booksPanelVisible = true;
 
     private LibUser currentUser;
-    private LibrarySubject librarySubject = new LibrarySubject();
-    
-    // Strategy per display dei libri
-    private BookDisplayStrategy pdfStrategy = new PdfDisplayStrategy();
-    private BookDisplayStrategy epubStrategy = new EpubDisplayStrategy();
+    private final LibrarySubject librarySubject = new LibrarySubject();
 
     private List<Book> currentLibraryBooks = new ArrayList<>();
 
@@ -165,8 +142,8 @@ public class HomeController {
                     if (selectedLibrary != null) {
                         loadBooksForLibrary(selectedLibrary);
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (IOException ex) {
+                    System.err.println("Errore durante il caricamento della finestra: " + ex.getMessage());
                 }
             });
         }

@@ -18,6 +18,7 @@ public class AddAuthorDialogController {
     private Author createdAuthor;
 
     @FXML
+    @SuppressWarnings("unused")
     private void initialize() {
         saveAuthorBtn.setOnAction(e -> saveAuthor());
         cancelBtn.setOnAction(e -> closeDialog());

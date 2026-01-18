@@ -2,7 +2,6 @@ package com.library.controllers;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.library.dao.AuthorDAO;
 import com.library.dao.BookDAO;
@@ -12,7 +11,6 @@ import com.library.dao.LibAccessDAO;
 import com.library.dao.LibrariesDAO;
 import com.library.models.Author;
 import com.library.models.Genre;
-import com.library.models.LibAccess;
 import com.library.models.LibUser;
 import com.library.models.Libraries;
 
@@ -49,6 +47,7 @@ public class AddBookController {
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void initialize() {
         // Property Binding: disabilita saveBookBtn se i campi obbligatori sono vuoti
         saveBookBtn.disableProperty().bind(
@@ -179,7 +178,7 @@ public class AddBookController {
             authorField.setText(newAuthor.getAuthorName() + " " + newAuthor.getSurname());
             suggestAuthors(authorField.getText());
         }
-    } catch (Exception e) {
+    } catch (java.io.IOException e) {
         System.err.println("Errore nell'apertura della dialog autore: " + e.getMessage());
     }
     }
@@ -218,7 +217,7 @@ public class AddBookController {
             genreField.setText(newGenre.getGenreName());
             suggestGenres(genreField.getText());
         }
-    } catch (Exception e) {
+    } catch (java.io.IOException e) {
         System.err.println("Errore nell'apertura della dialog genere: " + e.getMessage());
     }
     }
@@ -292,7 +291,7 @@ public class AddBookController {
                     Thread.currentThread().interrupt();
                 }
             });
-    } catch (Exception e) {
+    } catch (java.io.IOException | NumberFormatException e) {
         System.err.println("Errore durante il salvataggio del libro: " + e.getMessage());
         showNotification("Errore durante il salvataggio del libro!");
     }
