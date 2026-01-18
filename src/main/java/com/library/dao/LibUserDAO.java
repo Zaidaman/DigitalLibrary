@@ -32,7 +32,7 @@ public class LibUserDAO {
         }
     public List<LibUser> findAll() {
         List<LibUser> users = new ArrayList<>();
-        String sql = "SELECT IdUser, Username, UserPass, FirstLogin, IsAdmin FROM LibUser";
+        String sql = "SELECT IdUser, Username, UserPass, FirstLogin, IsAdmin, ChosenPath FROM LibUser";
         try (Connection conn = DbUtils.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -42,7 +42,8 @@ public class LibUserDAO {
                     rs.getString("Username"),
                     rs.getString("UserPass"),
                     rs.getBoolean("FirstLogin"),
-                    rs.getBoolean("IsAdmin")
+                    rs.getBoolean("IsAdmin"),
+                    rs.getString("ChosenPath")
                 );
                 users.add(user);
             }
@@ -53,7 +54,7 @@ public class LibUserDAO {
     }
 
     public LibUser findById(int idUser) {
-        String sql = "SELECT IdUser, Username, UserPass, FirstLogin, IsAdmin FROM LibUser WHERE IdUser = ?";
+        String sql = "SELECT IdUser, Username, UserPass, FirstLogin, IsAdmin, ChosenPath FROM LibUser WHERE IdUser = ?";
         try (Connection conn = DbUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, idUser);
@@ -64,7 +65,8 @@ public class LibUserDAO {
                         rs.getString("Username"),
                         rs.getString("UserPass"),
                         rs.getBoolean("FirstLogin"),
-                        rs.getBoolean("IsAdmin")
+                        rs.getBoolean("IsAdmin"),
+                        rs.getString("ChosenPath")
                     );
                 }
             }
@@ -72,5 +74,17 @@ public class LibUserDAO {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    public void updateChosenPathAndFirstLogin(int idUser, String chosenPath) {
+        String sql = "UPDATE LibUser SET ChosenPath = ?, FirstLogin = 0 WHERE IdUser = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, chosenPath);
+            ps.setInt(2, idUser);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

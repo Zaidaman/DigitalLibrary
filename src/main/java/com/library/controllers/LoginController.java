@@ -116,21 +116,35 @@ public class LoginController {
         if (exists) {
             messageLabel.setText("Username già esistente.");
         } else {
-            userDAO.insert(new LibUser(0, username, password, true, false));
+            userDAO.insert(new LibUser(0, username, password, true, false, null));
             messageLabel.setText("Registrazione avvenuta!");
         }
     }
 
     private void goToHome() {
         try {
+            // Recupera l'utente loggato
+            LibUser loggedUser = userDAO.findAll().stream()
+                .filter(u -> u.getUsername().equals(usernameField.getText()))
+                .findFirst().orElse(null);
+            
+            if (loggedUser == null) {
+                messageLabel.setText("Errore nel recupero dei dati utente.");
+                return;
+            }
+            
+            // Gestisci il primo login
+            if (loggedUser.isFirstLogin()) {
+                handleFirstLogin(loggedUser);
+                // Ricarica l'utente aggiornato dal database
+                loggedUser = userDAO.findById(loggedUser.getIdUser());
+            }
+            
             Stage stage = (Stage) loginButton.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
             Scene scene = new Scene(loader.load(), 900, 600);
             // Passa l'utente loggato al controller della home
             HomeController homeController = loader.getController();
-            LibUser loggedUser = userDAO.findAll().stream()
-                .filter(u -> u.getUsername().equals(usernameField.getText()))
-                .findFirst().orElse(null);
             if (homeController != null && loggedUser != null) {
                 homeController.setUser(loggedUser);
             }
@@ -139,6 +153,40 @@ public class LoginController {
         } catch (IOException e) {
             // Log dell'errore, senza printStackTrace
             messageLabel.setText("Errore nel caricamento della Home: " + (e.getMessage() != null ? e.getMessage() : "Errore sconosciuto"));
+        }
+    }
+    
+    private void handleFirstLogin(LibUser user) {
+        // Mostra messaggio di benvenuto
+        javafx.scene.control.Alert welcomeAlert = new javafx.scene.control.Alert(
+            javafx.scene.control.Alert.AlertType.INFORMATION);
+        welcomeAlert.setTitle("Benvenuto!");
+        welcomeAlert.setHeaderText("Benvenuto nella Digital Library, " + user.getUsername() + "!");
+        welcomeAlert.setContentText("Prima di iniziare, seleziona la cartella dove desideri salvare i tuoi libri.");
+        welcomeAlert.showAndWait();
+        
+        // Apri il dialog per selezionare la cartella
+        javafx.stage.DirectoryChooser directoryChooser = new javafx.stage.DirectoryChooser();
+        directoryChooser.setTitle("Seleziona cartella per i libri");
+        directoryChooser.setInitialDirectory(new java.io.File(System.getProperty("user.home")));
+        
+        Stage stage = (Stage) loginButton.getScene().getWindow();
+        java.io.File selectedDirectory = directoryChooser.showDialog(stage);
+        
+        if (selectedDirectory != null) {
+            // Salva il percorso selezionato nel database
+            userDAO.updateChosenPathAndFirstLogin(user.getIdUser(), selectedDirectory.getAbsolutePath());
+        } else {
+            // Se l'utente annulla, usa una cartella predefinita
+            String defaultPath = System.getProperty("user.home") + java.io.File.separator + "DigitalLibrary";
+            userDAO.updateChosenPathAndFirstLogin(user.getIdUser(), defaultPath);
+            
+            javafx.scene.control.Alert infoAlert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.INFORMATION);
+            infoAlert.setTitle("Cartella predefinita");
+            infoAlert.setHeaderText("Cartella predefinita selezionata");
+            infoAlert.setContentText("I tuoi libri verranno salvati in: " + defaultPath);
+            infoAlert.showAndWait();
         }
     }
 }
