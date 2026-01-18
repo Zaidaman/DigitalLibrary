@@ -250,8 +250,12 @@ public class AddBookController {
             if (library == null) return; // Libreria non trovata
 
             String ext = selectedBookFile.getName().toLowerCase().endsWith(".epub") ? "epub" : "pdf";
-            // Usa una cartella dati persistente invece di resources
-            String destPath = "library-data/" + ext + "/";
+            // Usa la cartella scelta dall'utente
+            String userChosenPath = currentUser.getChosenPath();
+            if (userChosenPath == null || userChosenPath.trim().isEmpty()) {
+                userChosenPath = System.getProperty("user.home") + java.io.File.separator + "DigitalLibrary";
+            }
+            String destPath = userChosenPath + java.io.File.separator + ext + java.io.File.separator;
             java.io.File destFolder = new java.io.File(destPath);
             if (!destFolder.exists()) destFolder.mkdirs();
             java.io.File destFile = new java.io.File(destPath + selectedBookFile.getName());

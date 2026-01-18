@@ -643,7 +643,9 @@ public class HomeController {
                 Book book = bookDAO.findByTitle(newVal);
 
                 if (book != null && book.getFilePath() != null && !book.getFilePath().isEmpty()) {
-                    BookViewerWindow viewer = new BookViewerWindow(book);
+                    // Passa il percorso base dell'utente al viewer
+                    String userBasePath = currentUser != null ? currentUser.getChosenPath() : null;
+                    BookViewerWindow viewer = new BookViewerWindow(book, userBasePath);
                     viewer.show();
                 }
             }

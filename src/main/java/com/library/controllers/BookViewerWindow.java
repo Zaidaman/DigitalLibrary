@@ -31,11 +31,18 @@ import nl.siegmann.epublib.epub.EpubReader;
 
 public class BookViewerWindow {
 
-    private Book book;
+    private final Book book;
     private Stage stage;
+    private final String userBasePath;
 
     public BookViewerWindow(Book book) {
         this.book = book;
+        this.userBasePath = null;
+    }
+    
+    public BookViewerWindow(Book book, String userBasePath) {
+        this.book = book;
+        this.userBasePath = userBasePath;
     }
 
     public void show() {
@@ -76,12 +83,26 @@ public class BookViewerWindow {
 
     private SwingNode loadPdfContent() {
         try {
-            File pdfFile = new File("library-data/" + book.getFilePath());
-            InputStream pdfStream;
-
-            if (pdfFile.exists()) {
-                pdfStream = new java.io.FileInputStream(pdfFile);
-            } else {
+            InputStream pdfStream = null;
+            
+            // Prova prima nella cartella scelta dall'utente
+            if (userBasePath != null && !userBasePath.trim().isEmpty()) {
+                File userPdfFile = new File(userBasePath + File.separator + book.getFilePath());
+                if (userPdfFile.exists()) {
+                    pdfStream = new java.io.FileInputStream(userPdfFile);
+                }
+            }
+            
+            // Fallback: prova in library-data
+            if (pdfStream == null) {
+                File pdfFile = new File("library-data/" + book.getFilePath());
+                if (pdfFile.exists()) {
+                    pdfStream = new java.io.FileInputStream(pdfFile);
+                }
+            }
+            
+            // Fallback: prova nelle risorse
+            if (pdfStream == null) {
                 pdfStream = getClass().getClassLoader().getResourceAsStream(book.getFilePath());
             }
 
@@ -112,12 +133,26 @@ public class BookViewerWindow {
 
     private void loadEpubContent(WebView webView, Button prevBtn, Button nextBtn) {
         try {
-            File epubFile = new File("library-data/epub/" + new File(book.getFilePath()).getName());
-            InputStream epubStream;
-
-            if (epubFile.exists()) {
-                epubStream = new java.io.FileInputStream(epubFile);
-            } else {
+            InputStream epubStream = null;
+            
+            // Prova prima nella cartella scelta dall'utente
+            if (userBasePath != null && !userBasePath.trim().isEmpty()) {
+                File userEpubFile = new File(userBasePath + File.separator + book.getFilePath());
+                if (userEpubFile.exists()) {
+                    epubStream = new java.io.FileInputStream(userEpubFile);
+                }
+            }
+            
+            // Fallback: prova in library-data
+            if (epubStream == null) {
+                File epubFile = new File("library-data/epub/" + new File(book.getFilePath()).getName());
+                if (epubFile.exists()) {
+                    epubStream = new java.io.FileInputStream(epubFile);
+                }
+            }
+            
+            // Fallback: prova nelle risorse
+            if (epubStream == null) {
                 epubStream = getClass().getClassLoader()
                         .getResourceAsStream("epub/" + new File(book.getFilePath()).getName());
             }
