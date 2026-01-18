@@ -21,7 +21,11 @@ import javafx.scene.web.WebView;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 
-public class BookDAO {
+/**
+ * DAO per la gestione dei libri nel database.
+ * Implementa BaseDAO ma con metodo insert personalizzato.
+ */
+public class BookDAO implements BaseDAO<Book> {
 
     // Inserisce un nuovo libro nel DB con percorso file e restituisce l'id generato
     public int insert(Book book, int idAuthor, int annoPub) {
@@ -43,6 +47,16 @@ public class BookDAO {
             throw new RuntimeException(e);
         }
         return -1;
+    }
+    
+    /**
+     * Implementazione base di insert per conformità a BaseDAO.
+     * Usa valori di default per idAuthor e annoPub.
+     */
+    @Override
+    public int insert(Book book) {
+        // Implementazione semplificata che richiama il metodo completo
+        return insert(book, -1, 0);
     }
 
     // Carica EPUB dentro WebView
@@ -77,6 +91,7 @@ public class BookDAO {
     }
 
     // Restituisce tutti i libri
+    @Override
     public List<Book> findAll() {
         List<Book> books = new ArrayList<>();
         String sql = "SELECT IdBook, Title, IdAuthor, AnnoPub, BookFile FROM Book";
@@ -171,5 +186,39 @@ public class BookDAO {
             throw new RuntimeException(e);
         }
         return -1;
+    }
+    
+    @Override
+    public Book findById(int id) {
+        String sql = "SELECT IdBook, Title, IdAuthor, AnnoPub, BookFile FROM Book WHERE IdBook = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new Book(
+                        rs.getString("Title"),
+                        null,
+                        null,
+                        rs.getString("BookFile"),
+                        -1
+                );
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+    
+    @Override
+    public void delete(int id) {
+        String sql = "DELETE FROM Book WHERE IdBook = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

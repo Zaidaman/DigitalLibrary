@@ -2,9 +2,11 @@ package com.library.controllers;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.library.dao.AuthorDAO;
 import com.library.dao.BookDAO;
+import com.library.dao.DAOFactory;
 import com.library.dao.GenreDAO;
 import com.library.dao.LibAccessDAO;
 import com.library.dao.LibrariesDAO;
@@ -48,6 +50,14 @@ public class AddBookController {
 
     @FXML
     private void initialize() {
+        // Property Binding: disabilita saveBookBtn se i campi obbligatori sono vuoti
+        saveBookBtn.disableProperty().bind(
+            titleField.textProperty().isEmpty()
+            .or(authorField.textProperty().isEmpty())
+            .or(genreField.textProperty().isEmpty())
+            .or(libraryComboBox.valueProperty().isNull())
+        );
+        
         selectBookFileBtn.setOnAction(e -> selectBookFile());
         authorField.textProperty().addListener((obs, oldVal, newVal) -> suggestAuthors(newVal));
         addAuthorBtn.setOnAction(e -> openAddAuthorDialog());
@@ -107,13 +117,15 @@ public class AddBookController {
     }
 
     private void loadLibraries() {
-        LibAccessDAO accessDAO = new LibAccessDAO();
-        LibrariesDAO librariesDAO = new LibrariesDAO();
-        List<LibAccess> accesses = accessDAO.findByUserId(currentUser.getIdUser());
-        for (LibAccess access : accesses) {
-            Libraries lib = librariesDAO.findById(access.getIdLibrary());
-            if (lib != null) libraryComboBox.getItems().add(lib.getLibName());            
-        }
+        LibAccessDAO accessDAO = DAOFactory.getInstance().getLibAccessDAO();
+        LibrariesDAO librariesDAO = DAOFactory.getInstance().getLibrariesDAO();
+        
+        // Usa stream per caricare le librerie
+        accessDAO.findByUserId(currentUser.getIdUser()).stream()
+            .map(access -> librariesDAO.findById(access.getIdLibrary()))
+            .filter(lib -> lib != null)
+            .map(Libraries::getLibName)
+            .forEach(libName -> libraryComboBox.getItems().add(libName));
     }
 
     private void selectBookFile() {
@@ -132,24 +144,17 @@ public class AddBookController {
     }
 
     private void suggestAuthors(String query) {
-        AuthorDAO authorDAO = new AuthorDAO();
+        AuthorDAO authorDAO = DAOFactory.getInstance().getAuthorDAO();
         List<Author> authors = authorDAO.findAll();
         authorSuggestionsList.getItems().clear();
         
-        if (query == null || query.trim().isEmpty()) {
-            // Mostra tutti gli autori se la query è vuota
-            for (Author a : authors) {
-                authorSuggestionsList.getItems().add(a.getAuthorName() + " " + a.getSurname());
-            }
-        } else {
-            // Filtra gli autori in base alla query
-            for (Author a : authors) {
-                if (a.getAuthorName().toLowerCase().contains(query.toLowerCase()) ||
-                    a.getSurname().toLowerCase().contains(query.toLowerCase())) {
-                    authorSuggestionsList.getItems().add(a.getAuthorName() + " " + a.getSurname());
-                }
-            }
-        }
+        // Usa stream per filtrare e mappare
+        authors.stream()
+            .filter(a -> query == null || query.trim().isEmpty() || 
+                         a.getAuthorName().toLowerCase().contains(query.toLowerCase()) ||
+                         a.getSurname().toLowerCase().contains(query.toLowerCase()))
+            .map(a -> a.getAuthorName() + " " + a.getSurname())
+            .forEach(name -> authorSuggestionsList.getItems().add(name));
         
         authorSuggestionsList.setVisible(!authorSuggestionsList.getItems().isEmpty());
         authorSuggestionsList.setManaged(!authorSuggestionsList.getItems().isEmpty());
@@ -180,23 +185,16 @@ public class AddBookController {
     }
 
     private void suggestGenres(String query) {
-        GenreDAO genreDAO = new GenreDAO();
+        GenreDAO genreDAO = DAOFactory.getInstance().getGenreDAO();
         List<Genre> genres = genreDAO.findAll();
         genreSuggestionsList.getItems().clear();
         
-        if (query == null || query.trim().isEmpty()) {
-            // Mostra tutti i generi se la query è vuota
-            for (Genre g : genres) {
-                genreSuggestionsList.getItems().add(g.getGenreName());
-            }
-        } else {
-            // Filtra i generi in base alla query
-            for (Genre g : genres) {
-                if (g.getGenreName().toLowerCase().contains(query.toLowerCase())) {
-                    genreSuggestionsList.getItems().add(g.getGenreName());
-                }
-            }
-        }
+        // Usa stream per filtrare e mappare
+        genres.stream()
+            .filter(g -> query == null || query.trim().isEmpty() || 
+                         g.getGenreName().toLowerCase().contains(query.toLowerCase()))
+            .map(Genre::getGenreName)
+            .forEach(name -> genreSuggestionsList.getItems().add(name));
         
         genreSuggestionsList.setVisible(!genreSuggestionsList.getItems().isEmpty());
         genreSuggestionsList.setManaged(!genreSuggestionsList.getItems().isEmpty());
@@ -234,27 +232,21 @@ public class AddBookController {
             String authorName = authorField.getText().trim();
             String genreName = genreField.getText().trim();
 
-            AuthorDAO authorDAO = new AuthorDAO();
-            Author author = null;
-            for (Author a : authorDAO.findAll()) {
-                if ((a.getAuthorName() + " " + a.getSurname()).equals(authorName)) {
-                    author = a;
-                    break;
-                }
-            }
+            AuthorDAO authorDAO = DAOFactory.getInstance().getAuthorDAO();
+            // Usa stream per trovare l'autore
+            Author author = authorDAO.findAll().stream()
+                .filter(a -> (a.getAuthorName() + " " + a.getSurname()).equals(authorName))
+                .findFirst().orElse(null);
             if (author == null) return; // Autore non trovato
 
-            GenreDAO genreDAO = new GenreDAO();
-            Genre genre = null;
-            for (Genre g : genreDAO.findAll()) {
-                if (g.getGenreName().equals(genreName)) {
-                    genre = g;
-                    break;
-                }
-            }
+            GenreDAO genreDAO = DAOFactory.getInstance().getGenreDAO();
+            // Usa stream per trovare il genere
+            Genre genre = genreDAO.findAll().stream()
+                .filter(g -> g.getGenreName().equals(genreName))
+                .findFirst().orElse(null);
             if (genre == null) return; // Genere non trovato
 
-            LibrariesDAO librariesDAO = new LibrariesDAO();
+            LibrariesDAO librariesDAO = DAOFactory.getInstance().getLibrariesDAO();
             Libraries library = librariesDAO.findByName(libraryName);
             if (library == null) return; // Libreria non trovata
 
@@ -269,17 +261,22 @@ public class AddBookController {
             // Salva con percorso relativo: pdf/file.pdf o epub/file.epub
             String relativeFilePath = ext + "/" + selectedBookFile.getName();
             
-            BookDAO bookDAO = new BookDAO();
-            com.library.models.Book book = new com.library.models.Book(title, null, null, relativeFilePath, library.getIdLibrary());
+            BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
+            // Usa Builder pattern per creare Book
+            com.library.models.Book book = new com.library.models.Book.Builder()
+                .title(title)
+                .filePath(relativeFilePath)
+                .idLibrary(library.getIdLibrary())
+                .build();
             int bookId = bookDAO.insert(book, author.getIdAuthor(), annoPub);
 
             if (bookId == -1) return; // Errore nell'inserimento
 
             // Salva relazioni N-N
-            com.library.dao.BookLibDAO bookLibDAO = new com.library.dao.BookLibDAO();
+            com.library.dao.BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
             bookLibDAO.insert(new com.library.models.BookLib(bookId, library.getIdLibrary()));
 
-            com.library.dao.BookGenreDAO bookGenreDAO = new com.library.dao.BookGenreDAO();
+            com.library.dao.BookGenreDAO bookGenreDAO = DAOFactory.getInstance().getBookGenreDAO();
             bookGenreDAO.insert(new com.library.models.BookGenre(bookId, genre.getIdGenre()));
             
             // Mostra notifica di successo

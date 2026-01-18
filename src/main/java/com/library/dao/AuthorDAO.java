@@ -11,8 +11,13 @@ import java.util.List;
 import com.library.models.Author;
 import com.library.utils.DbUtils;
 
-public class AuthorDAO {
-        public int insert(com.library.models.Author author) {
+/**
+ * DAO per la gestione degli autori nel database.
+ * Implementa BaseDAO per le operazioni CRUD standard.
+ */
+public class AuthorDAO implements BaseDAO<Author> {
+    @Override
+    public int insert(Author author) {
             String sql = "INSERT INTO Author (AuthorName, MidName, Surname) VALUES (?, ?, ?)";
             try (java.sql.Connection conn = com.library.utils.DbUtils.getConnection();
                  java.sql.PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -31,6 +36,8 @@ public class AuthorDAO {
             }
             return -1;
         }
+    
+    @Override
     public List<Author> findAll() {
         List<Author> authors = new ArrayList<>();
         String sql = "SELECT IdAuthor, AuthorName, MidName, Surname FROM Author";
@@ -52,6 +59,7 @@ public class AuthorDAO {
         return authors;
     }
 
+    @Override
     public Author findById(int idAuthor) {
         String sql = "SELECT IdAuthor, AuthorName, MidName, Surname FROM Author WHERE IdAuthor = ?";
         try (Connection conn = DbUtils.getConnection();
@@ -71,5 +79,17 @@ public class AuthorDAO {
             throw new RuntimeException(e);
         }
         return null;
+    }
+    
+    @Override
+    public void delete(int id) {
+        String sql = "DELETE FROM Author WHERE IdAuthor = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

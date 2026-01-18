@@ -2,6 +2,7 @@ package com.library.controllers;
 
 import java.io.IOException;
 
+import com.library.dao.DAOFactory;
 import com.library.dao.LibUserDAO;
 import com.library.models.LibUser;
 
@@ -26,7 +27,7 @@ public class LoginController {
     @FXML
     private Label messageLabel;
 
-    private final LibUserDAO userDAO = new LibUserDAO();
+    private final LibUserDAO userDAO = DAOFactory.getInstance().getLibUserDAO();
 
     @FXML
     private void initialize() {

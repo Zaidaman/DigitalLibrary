@@ -11,8 +11,13 @@ import java.util.List;
 import com.library.models.Libraries;
 import com.library.utils.DbUtils;
 
-public class LibrariesDAO {
-    public int insert(com.library.models.Libraries library) {
+/**
+ * DAO per la gestione delle librerie nel database.
+ * Implementa BaseDAO per le operazioni CRUD standard.
+ */
+public class LibrariesDAO implements BaseDAO<Libraries> {
+    @Override
+    public int insert(Libraries library) {
         String sql = "INSERT INTO Libraries (LibName) VALUES (?)";
         try (java.sql.Connection conn = com.library.utils.DbUtils.getConnection();
              java.sql.PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -29,6 +34,8 @@ public class LibrariesDAO {
         }
         return -1;
     }
+    
+    @Override
     public List<Libraries> findAll() {
         List<Libraries> libraries = new ArrayList<>();
         String sql = "SELECT IdLibrary, LibName FROM Libraries";
@@ -48,6 +55,7 @@ public class LibrariesDAO {
         return libraries;
     }
 
+    @Override
     public Libraries findById(int idLibrary) {
         String sql = "SELECT IdLibrary, LibName FROM Libraries WHERE IdLibrary = ?";
         try (Connection conn = DbUtils.getConnection();
@@ -85,6 +93,7 @@ public class LibrariesDAO {
         return null;
     }
 
+    @Override
     public void delete(int idLibrary) {
         String sql = "DELETE FROM Libraries WHERE IdLibrary = ?";
         try (Connection conn = DbUtils.getConnection();

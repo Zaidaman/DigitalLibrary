@@ -10,6 +10,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.swing.JPanel;
 
@@ -18,6 +19,7 @@ import org.icepdf.ri.common.SwingViewBuilder;
 
 import com.library.dao.BookDAO;
 import com.library.dao.BookLibDAO;
+import com.library.dao.DAOFactory;
 import com.library.dao.LibAccessDAO;
 import com.library.dao.LibUserDAO;
 import com.library.dao.LibrariesDAO;
@@ -25,6 +27,11 @@ import com.library.models.Book;
 import com.library.models.LibAccess;
 import com.library.models.LibUser;
 import com.library.models.Libraries;
+import com.library.observers.LibraryObserver;
+import com.library.observers.LibrarySubject;
+import com.library.strategies.BookDisplayStrategy;
+import com.library.strategies.PdfDisplayStrategy;
+import com.library.strategies.EpubDisplayStrategy;
 
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
@@ -97,6 +104,11 @@ public class HomeController {
     private boolean booksPanelVisible = true;
 
     private LibUser currentUser;
+    private LibrarySubject librarySubject = new LibrarySubject();
+    
+    // Strategy per display dei libri
+    private BookDisplayStrategy pdfStrategy = new PdfDisplayStrategy();
+    private BookDisplayStrategy epubStrategy = new EpubDisplayStrategy();
 
     private List<Resource> epubChapters;       // Lista dei capitoli dell'EPUB
     private int currentChapterIndex = 0;       // Capitolo attuale
@@ -161,23 +173,20 @@ public class HomeController {
                 if (library == null) return;
                 
                 // Ottieni tutti i libri dal DB
-                BookDAO bookDAO = new BookDAO();
+                BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
                 List<Book> allBooks = bookDAO.findAll();
                 
                 // Ottieni i libri già nella libreria
                 List<Book> booksInLibrary = bookDAO.findByLibraryId(library.getIdLibrary());
-                List<String> titlesInLibrary = new ArrayList<>();
-                for (Book b : booksInLibrary) {
-                    titlesInLibrary.add(b.getTitle());
-                }
+                List<String> titlesInLibrary = booksInLibrary.stream()
+                    .map(Book::getTitle)
+                    .collect(Collectors.toList());
                 
-                // Filtra i libri disponibili (non ancora nella libreria)
-                List<String> availableBooks = new ArrayList<>();
-                for (Book b : allBooks) {
-                    if (!titlesInLibrary.contains(b.getTitle())) {
-                        availableBooks.add(b.getTitle());
-                    }
-                }
+                // Filtra i libri disponibili usando stream
+                List<String> availableBooks = allBooks.stream()
+                    .map(Book::getTitle)
+                    .filter(title -> !titlesInLibrary.contains(title))
+                    .collect(Collectors.toList());
                 
                 if (availableBooks.isEmpty()) {
                     showAlert("Nessun libro disponibile", "Tutti i libri sono già presenti in questa libreria.");
@@ -198,7 +207,7 @@ public class HomeController {
                         // Trova l'ID del libro
                         int idBook = bookDAO.findIdByTitle(bookTitle);
                         if (idBook != -1) {
-                            BookLibDAO bookLibDAO = new BookLibDAO();
+                            BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
                             bookLibDAO.insert(new com.library.models.BookLib(idBook, library.getIdLibrary()));
                             showAlert("Successo", "Libro aggiunto alla libreria!");
                             // Ricarica i libri della libreria
@@ -219,12 +228,12 @@ public class HomeController {
                     return;
                 }
                 
-                LibrariesDAO libDAO = new LibrariesDAO();
+                LibrariesDAO libDAO = DAOFactory.getInstance().getLibrariesDAO();
                 Libraries library = libDAO.findByName(selectedLibrary);
                 if (library == null) return;
                 
                 // Ottieni i libri nella libreria
-                BookDAO bookDAO = new BookDAO();
+                BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
                 List<Book> booksInLibrary = bookDAO.findByLibraryId(library.getIdLibrary());
                 
                 if (booksInLibrary.isEmpty()) {
@@ -232,10 +241,10 @@ public class HomeController {
                     return;
                 }
                 
-                List<String> bookTitles = new ArrayList<>();
-                for (Book b : booksInLibrary) {
-                    bookTitles.add(b.getTitle());
-                }
+                // Usa stream per ottenere i titoli
+                List<String> bookTitles = booksInLibrary.stream()
+                    .map(Book::getTitle)
+                    .collect(Collectors.toList());
                 
                 // Dialog per selezionare il libro da rimuovere
                 javafx.scene.control.ChoiceDialog<String> dialog = 
@@ -257,7 +266,7 @@ public class HomeController {
                     if (confirmResult.isPresent() && confirmResult.get() == javafx.scene.control.ButtonType.OK) {
                         int idBook = bookDAO.findIdByTitle(bookTitle);
                         if (idBook != -1) {
-                            BookLibDAO bookLibDAO = new BookLibDAO();
+                            BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
                             bookLibDAO.deleteByBookAndLibrary(idBook, library.getIdLibrary());
                             showAlert("Successo", "Libro rimosso dalla libreria!");
                             // Ricarica i libri della libreria
@@ -351,19 +360,17 @@ public class HomeController {
                     return;
                 }
                 
-                LibrariesDAO libDAO = new LibrariesDAO();
+                LibrariesDAO libDAO = DAOFactory.getInstance().getLibrariesDAO();
                 Libraries library = libDAO.findByName(selectedLibrary);
                 if (library == null) return;
                 
-                // Ottieni lista di tutti gli utenti tranne quello corrente
-                LibUserDAO userDAO = new LibUserDAO();
+                // Ottieni lista di tutti gli utenti tranne quello corrente usando stream
+                LibUserDAO userDAO = DAOFactory.getInstance().getLibUserDAO();
                 List<LibUser> allUsers = userDAO.findAll();
-                List<String> usernames = new ArrayList<>();
-                for (LibUser user : allUsers) {
-                    if (user.getIdUser() != currentUser.getIdUser()) {
-                        usernames.add(user.getUsername());
-                    }
-                }
+                List<String> usernames = allUsers.stream()
+                    .filter(user -> user.getIdUser() != currentUser.getIdUser())
+                    .map(LibUser::getUsername)
+                    .collect(Collectors.toList());
                 
                 if (usernames.isEmpty()) {
                     showAlert("Nessun utente disponibile", "Non ci sono altri utenti con cui condividere.");
@@ -384,7 +391,7 @@ public class HomeController {
                         .findFirst().orElse(null);
                     
                     if (targetUser != null) {
-                        LibAccessDAO accessDAO = new LibAccessDAO();
+                        LibAccessDAO accessDAO = DAOFactory.getInstance().getLibAccessDAO();
                         // Verifica se l'utente ha già accesso
                         boolean alreadyHasAccess = accessDAO.findByUserId(targetUser.getIdUser())
                             .stream().anyMatch(a -> a.getIdLibrary() == library.getIdLibrary());
@@ -393,6 +400,10 @@ public class HomeController {
                             showAlert("Già condivisa", "L'utente ha già accesso a questa libreria.");
                         } else {
                             accessDAO.insert(new LibAccess(targetUser.getIdUser(), library.getIdLibrary()));
+                            
+                            // Notifica gli observer
+                            librarySubject.notifyLibraryShared(library, username);
+                            
                             showAlert("Successo", "Libreria condivisa con " + username + "!");
                         }
                     }
@@ -423,7 +434,7 @@ public class HomeController {
                 
                 Optional<javafx.scene.control.ButtonType> result = confirmAlert.showAndWait();
                 if (result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK) {
-                    LibAccessDAO accessDAO = new LibAccessDAO();
+                    LibAccessDAO accessDAO = DAOFactory.getInstance().getLibAccessDAO();
                     
                     // Rimuovi l'accesso dell'utente corrente
                     accessDAO.deleteByUserAndLibrary(currentUser.getIdUser(), library.getIdLibrary());
@@ -433,9 +444,13 @@ public class HomeController {
                     
                     if (remainingAccess.isEmpty()) {
                         // Nessun altro ha accesso, elimina completamente
-                        BookLibDAO bookLibDAO = new BookLibDAO();
+                        BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
                         bookLibDAO.deleteByLibraryId(library.getIdLibrary());
                         libDAO.delete(library.getIdLibrary());
+                        
+                        // Notifica gli observer
+                        librarySubject.notifyLibraryDeleted(library);
+                        
                         showAlert("Successo", "Libreria eliminata completamente.");
                     } else {
                         showAlert("Successo", "Il tuo accesso alla libreria è stato rimosso.");
@@ -515,14 +530,16 @@ public class HomeController {
     private void loadLibraries() {
         libraryList.getItems().clear();
         if (currentUser == null) return;
-        LibAccessDAO accessDAO = new LibAccessDAO();
-        LibrariesDAO librariesDAO = new LibrariesDAO();
-        for (LibAccess access : accessDAO.findByUserId(currentUser.getIdUser())) {
-            Libraries lib = librariesDAO.findById(access.getIdLibrary());
-            if (lib != null) {
-                libraryList.getItems().add(lib.getLibName());
-            }
-        }
+        
+        LibAccessDAO accessDAO = DAOFactory.getInstance().getLibAccessDAO();
+        LibrariesDAO librariesDAO = DAOFactory.getInstance().getLibrariesDAO();
+        
+        // Usa stream per caricare le librerie
+        accessDAO.findByUserId(currentUser.getIdUser()).stream()
+            .map(access -> librariesDAO.findById(access.getIdLibrary()))
+            .filter(lib -> lib != null)
+            .map(Libraries::getLibName)
+            .forEach(libName -> libraryList.getItems().add(libName));
     }
 
     private void setupLibrarySelection() {
@@ -536,11 +553,11 @@ public class HomeController {
     private void loadBooksForLibrary(String libraryName) {
         resetEpubNavigation();
 
-        LibrariesDAO libDAO = new LibrariesDAO();
+        LibrariesDAO libDAO = DAOFactory.getInstance().getLibrariesDAO();
         Libraries library = libDAO.findByName(libraryName);
         if (library == null) return;
 
-        BookDAO bookDAO = new BookDAO();
+        BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
 
         // Salva lista originale (serve per filtri/sort)
         currentLibraryBooks = bookDAO.findByLibraryId(library.getIdLibrary());
@@ -566,9 +583,10 @@ public class HomeController {
             return;
         }
 
-        for (Book b : books) {
-            booksList.getItems().add(b.getTitle());
-        }
+        // Usa stream per popolare la lista
+        books.stream()
+            .map(Book::getTitle)
+            .forEach(title -> booksList.getItems().add(title));
     }
 
     private void setupToggleButton() {
