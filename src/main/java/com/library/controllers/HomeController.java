@@ -554,6 +554,8 @@ public class HomeController {
     }
 
     private void refreshBooksList(List<Book> books) {
+        resetEpubNavigation();
+
         booksList.getItems().clear();
 
         if (books.isEmpty()) {
@@ -583,11 +585,17 @@ public class HomeController {
         });
     }
 
+    private void resetEpubNavigation() {
+        prevBtn.setVisible(false);
+        nextBtn.setVisible(false);
+        epubChapters = null;
+        currentChapterIndex = 0;
+        tempDirForEpub = null;
+    }
+
     public void showEpub(WebView webView, String epubFileName) {
         try {
-            // Nascondi i pulsanti finché non carichi tutto
-            prevBtn.setVisible(false);
-            nextBtn.setVisible(false);
+            resetEpubNavigation();
 
             // Prima prova a caricare da library-data/ (file aggiunti dall'utente)
             File epubFile = new File("library-data/epub/" + epubFileName);
@@ -666,8 +674,7 @@ public class HomeController {
 
         } catch (IOException | NullPointerException e) {
             System.err.println("Errore durante il caricamento dell'EPUB: " + e.getMessage());
-            prevBtn.setVisible(false);
-            nextBtn.setVisible(false);
+            resetEpubNavigation();
         }
     }
 
@@ -717,8 +724,7 @@ public class HomeController {
                 if (book != null && book.getFilePath() != null && !book.getFilePath().isEmpty()) {
                     if (book.getFilePath().endsWith(".pdf")) {
                         showPdfFromResource(book.getFilePath());
-                        prevBtn.setVisible(false);
-                        nextBtn.setVisible(false);
+                        resetEpubNavigation();
                     } else if (book.getFilePath().endsWith(".epub")) {
                         // Usa il WebView già presente nella UI
                         WebView webView = new WebView();
