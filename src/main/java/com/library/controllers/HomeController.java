@@ -39,8 +39,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.StackPane;
@@ -95,11 +98,20 @@ public class HomeController {
     @FXML
     private MenuItem logoutMenuItem;
 
-    @FXML private Button sortAscBtn;
-    @FXML private Button sortDescBtn;
-    @FXML private Button filterPdfBtn;
-    @FXML private Button filterEpubBtn;
-    @FXML private Button filterAllBtn;
+    @FXML
+    private ComboBox<String> sortCombo;
+    
+    @FXML
+    private MenuButton filterMenuBtn;
+    
+    @FXML
+    private CheckMenuItem pdfFilterItem;
+    
+    @FXML
+    private CheckMenuItem epubFilterItem;
+    
+    @FXML
+    private Button clearFiltersBtn;
 
     private boolean booksPanelVisible = true;
 
@@ -115,6 +127,10 @@ public class HomeController {
     private File tempDirForEpub;               // Cartella temporanea per i file estratti
 
     private List<Book> currentLibraryBooks = new ArrayList<>();
+
+    private String selectedSort = "NONE";
+    private boolean filterPdf = false;
+    private boolean filterEpub = false;
 
     @FXML
     public void initialize() {
@@ -133,8 +149,9 @@ public class HomeController {
         setupRemoveBookFromLibraryMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
-        setupSortButtons();
-        setupFilterButtons();
+        setupSortDropdown();
+        setupFilterDropdown();
+        setupClearButton();
     }
     private void setupAddBookMenuItem() {
         if (addBookMenuItem != null) {
@@ -465,50 +482,80 @@ public class HomeController {
         }
     }
 
-    private void setupSortButtons() {
-        sortAscBtn.setOnAction(e -> {
-            List<Book> sorted = new ArrayList<>(currentLibraryBooks);
-            sorted.sort((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
-            refreshBooksList(sorted);
-        });
+   private void setupSortDropdown() {
+        sortCombo.getItems().addAll(
+                "Nessuno",
+                "Titolo A → Z",
+                "Titolo Z → A"
+        );
 
-        sortDescBtn.setOnAction(e -> {
-            List<Book> sorted = new ArrayList<>(currentLibraryBooks);
-            sorted.sort((a, b) -> b.getTitle().compareToIgnoreCase(a.getTitle()));
-            refreshBooksList(sorted);
+        sortCombo.getSelectionModel().selectFirst();
+
+        sortCombo.setOnAction(e -> {
+            selectedSort = sortCombo.getValue();
+            applyFiltersAndSort();
         });
     }
 
-    private void setupFilterButtons() {
+   private void setupFilterDropdown() {
+        pdfFilterItem.setOnAction(e -> {
+            filterPdf = pdfFilterItem.isSelected();
+            applyFiltersAndSort();
+        });
+
+        epubFilterItem.setOnAction(e -> {
+            filterEpub = epubFilterItem.isSelected();
+            applyFiltersAndSort();
+        });
+    }
+
+    private void setupClearButton() {
+        clearFiltersBtn.setOnAction(e -> {
+                selectedSort = "NONE";
+                filterPdf = false;
+                filterEpub = false;
+
+                sortCombo.getSelectionModel().selectFirst();
+
+                pdfFilterItem.setSelected(false);
+                epubFilterItem.setSelected(false);
+
+                refreshBooksList(currentLibraryBooks);
+            });
+        }
+
+        private void applyFiltersAndSort() {
+
         resetEpubNavigation();
 
-        filterPdfBtn.setOnAction(e -> {
-            List<Book> filtered = new ArrayList<>();
+        List<Book> result = new ArrayList<>(currentLibraryBooks);
 
-            for (Book b : currentLibraryBooks) {
-                if (b.getFilePath().toLowerCase().endsWith(".pdf")) {
-                    filtered.add(b);
-                }
+        // -------- FILTRI --------
+        result.removeIf(book -> {
+
+            boolean remove = false;
+
+            if (filterPdf && !book.getFilePath().toLowerCase().endsWith(".pdf")) {
+                remove = true;
             }
 
-            refreshBooksList(filtered);
-        });
-
-        filterEpubBtn.setOnAction(e -> {
-            List<Book> filtered = new ArrayList<>();
-
-            for (Book b : currentLibraryBooks) {
-                if (b.getFilePath().toLowerCase().endsWith(".epub")) {
-                    filtered.add(b);
-                }
+            if (filterEpub && !book.getFilePath().toLowerCase().endsWith(".epub")) {
+                remove = true;
             }
 
-            refreshBooksList(filtered);
+            return remove;
         });
 
-        filterAllBtn.setOnAction(e -> {
-            refreshBooksList(currentLibraryBooks);
-        });
+        // -------- SORT --------
+        if ("Titolo A → Z".equals(selectedSort)) {
+            result.sort((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
+        }
+
+        if ("Titolo Z → A".equals(selectedSort)) {
+            result.sort((a, b) -> b.getTitle().compareToIgnoreCase(a.getTitle()));
+        }
+
+        refreshBooksList(result);
     }
 
     private void showAlert(String title, String content) {
