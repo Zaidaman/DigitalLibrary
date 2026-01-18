@@ -4,7 +4,8 @@ use DigitalLibrary;
 create table if not exists LibUser (
 IdUser int auto_increment primary key,
 Username varchar(20) not null unique,
-UserPass varchar(15) not null
+UserPass varchar(15) not null,
+FirstLogin tinyint(1) not null default 1
 );
 
 create table if not exists Libraries (
