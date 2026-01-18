@@ -113,7 +113,7 @@ public class LoginController {
         if (exists) {
             messageLabel.setText("Username già esistente.");
         } else {
-            userDAO.insert(new LibUser(0, username, password));
+            userDAO.insert(new LibUser(0, username, password, true, false));
             messageLabel.setText("Registrazione avvenuta!");
         }
     }

@@ -5,7 +5,8 @@ create table if not exists LibUser (
 IdUser int auto_increment primary key,
 Username varchar(20) not null unique,
 UserPass varchar(15) not null,
-FirstLogin tinyint(1) not null default 1
+FirstLogin tinyint(1) not null default 1,
+IsAdmin tinyint(1) not null default 0
 );
 
 create table if not exists Libraries (

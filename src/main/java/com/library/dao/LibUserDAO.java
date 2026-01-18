@@ -32,7 +32,7 @@ public class LibUserDAO {
         }
     public List<LibUser> findAll() {
         List<LibUser> users = new ArrayList<>();
-        String sql = "SELECT IdUser, Username, UserPass FROM LibUser";
+        String sql = "SELECT IdUser, Username, UserPass, FirstLogin, IsAdmin FROM LibUser";
         try (Connection conn = DbUtils.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -40,7 +40,9 @@ public class LibUserDAO {
                 LibUser user = new LibUser(
                     rs.getInt("IdUser"),
                     rs.getString("Username"),
-                    rs.getString("UserPass")
+                    rs.getString("UserPass"),
+                    rs.getBoolean("FirstLogin"),
+                    rs.getBoolean("IsAdmin")
                 );
                 users.add(user);
             }
@@ -51,7 +53,7 @@ public class LibUserDAO {
     }
 
     public LibUser findById(int idUser) {
-        String sql = "SELECT IdUser, Username, UserPass FROM LibUser WHERE IdUser = ?";
+        String sql = "SELECT IdUser, Username, UserPass, FirstLogin, IsAdmin FROM LibUser WHERE IdUser = ?";
         try (Connection conn = DbUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, idUser);
@@ -60,7 +62,9 @@ public class LibUserDAO {
                     return new LibUser(
                         rs.getInt("IdUser"),
                         rs.getString("Username"),
-                        rs.getString("UserPass")
+                        rs.getString("UserPass"),
+                        rs.getBoolean("FirstLogin"),
+                        rs.getBoolean("IsAdmin")
                     );
                 }
             }
