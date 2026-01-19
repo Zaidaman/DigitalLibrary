@@ -16,6 +16,7 @@ import com.library.models.Book;
 import com.library.models.LibAccess;
 import com.library.models.LibUser;
 import com.library.models.Libraries;
+import com.library.observers.LibraryObserver;
 import com.library.observers.LibrarySubject;
 
 import javafx.fxml.FXML;
@@ -35,7 +36,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class HomeController {
+public class HomeController implements LibraryObserver {
 
     @FXML
     private ListView<String> libraryList;
@@ -134,6 +135,9 @@ public class HomeController {
         setupSort();
         setupFilter();
         setupClearButton();
+        
+        // Registra questo controller come observer
+        librarySubject.addObserver(this);
     }
 
     private void setupAddBookMenuItem() {
@@ -671,8 +675,13 @@ public class HomeController {
                             // Associa all'utente corrente usando l'ID generato
                             LibAccessDAO accessDAO = new LibAccessDAO();
                             accessDAO.insert(new LibAccess(currentUser.getIdUser(), generatedId));
-                            // Aggiorna lista
-                            loadLibraries();
+                            
+                            // Notifica gli observer
+                            Libraries createdLib = librariesDAO.findById(generatedId);
+                            if (createdLib != null) {
+                                librarySubject.notifyLibraryAdded(createdLib);
+                            }
+                            
                             showAlert("Successo", "Libreria creata con successo!");
                         } else {
                             showAlert("Errore", "Errore durante la creazione della libreria.");
@@ -998,5 +1007,25 @@ public class HomeController {
         Label defaultLabel = new Label("Benvenuto nella tua Libreria Digitale!");
         defaultLabel.setStyle("-fx-font-size: 20px;");
         contentArea.getChildren().setAll(defaultLabel);
+    }
+    
+    // Implementazione del pattern Observer
+    @Override
+    public void onLibraryAdded(Libraries library) {
+        System.out.println("[Observer] Nuova libreria aggiunta: " + library.getLibName());
+        // Ricarica automaticamente la lista delle librerie
+        loadLibraries();
+    }
+    
+    @Override
+    public void onLibraryDeleted(Libraries library) {
+        System.out.println("[Observer] Libreria eliminata: " + library.getLibName());
+        // L'UI è già stata aggiornata nel metodo setupDeleteLibraryMenuItem
+    }
+    
+    @Override
+    public void onLibraryShared(Libraries library, String username) {
+        System.out.println("[Observer] Libreria '" + library.getLibName() + "' condivisa con: " + username);
+        // Potremmo aggiungere un log o una notifica visiva
     }
 }

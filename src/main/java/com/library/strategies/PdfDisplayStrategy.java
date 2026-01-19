@@ -1,12 +1,14 @@
 package com.library.strategies;
 
-import javafx.embed.swing.SwingNode;
-import javafx.scene.layout.StackPane;
+import java.io.File;
+
+import javax.swing.JPanel;
+
 import org.icepdf.ri.common.SwingController;
 import org.icepdf.ri.common.SwingViewBuilder;
 
-import javax.swing.JPanel;
-import java.io.File;
+import javafx.embed.swing.SwingNode;
+import javafx.scene.layout.StackPane;
 
 /**
  * Strategia per visualizzare file PDF usando ICEpdf.
@@ -30,7 +32,6 @@ public class PdfDisplayStrategy implements BookDisplayStrategy {
             contentArea.getChildren().add(swingNode);
         } catch (Exception e) {
             System.err.println("Errore nel caricamento del PDF: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }
