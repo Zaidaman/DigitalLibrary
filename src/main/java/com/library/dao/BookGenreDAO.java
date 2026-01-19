@@ -40,4 +40,43 @@ public class BookGenreDAO {
         }
         return list;
     }
+    
+    public List<Integer> findGenresByBookId(int idBook) {
+        List<Integer> genreIds = new ArrayList<>();
+        String sql = "SELECT IdGenre FROM BookGenre WHERE IdBook = ?";
+        try (Connection conn = DbUtils.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idBook);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                genreIds.add(rs.getInt("IdGenre"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return genreIds;
+    }
+    
+    public void updateGenreForBook(int idBook, int newIdGenre) {
+        // Elimina le vecchie associazioni
+        String deleteSql = "DELETE FROM BookGenre WHERE IdBook = ?";
+        try (Connection conn = DbUtils.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+            ps.setInt(1, idBook);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        
+        // Inserisci la nuova associazione
+        String insertSql = "INSERT INTO BookGenre (IdBook, IdGenre) VALUES (?, ?)";
+        try (Connection conn = DbUtils.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(insertSql)) {
+            ps.setInt(1, idBook);
+            ps.setInt(2, newIdGenre);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

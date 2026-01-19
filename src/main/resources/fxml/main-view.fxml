@@ -21,6 +21,7 @@
             <Menu text="Libro">
                 <MenuItem fx:id="addBookMenuItem" text="Aggiungi Libro" />
                 <MenuItem fx:id="addExistingBookMenuItem" text="Aggiungi Libro alla Libreria" />
+                <MenuItem fx:id="editBookMenuItem" text="Modifica Libro" />
                 <MenuItem fx:id="removeBookFromLibraryMenuItem" text="Rimuovi Libro dalla Libreria" />
             </Menu>
         </MenuBar>

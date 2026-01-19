@@ -221,4 +221,78 @@ public class BookDAO implements BaseDAO<Book> {
             throw new RuntimeException(e);
         }
     }
+    
+    public java.util.Map<String, String> findBookDetailsById(int idBook) {
+        String sql = "SELECT b.IdBook, b.Title, b.AnnoPub, b.BookFile, " +
+                     "a.AuthorName, a.MidName, a.Surname, " +
+                     "GROUP_CONCAT(g.GenreName SEPARATOR ', ') as Genres " +
+                     "FROM Book b " +
+                     "LEFT JOIN Author a ON b.IdAuthor = a.IdAuthor " +
+                     "LEFT JOIN BookGenre bg ON b.IdBook = bg.IdBook " +
+                     "LEFT JOIN Genre g ON bg.IdGenre = g.IdGenre " +
+                     "WHERE b.IdBook = ? " +
+                     "GROUP BY b.IdBook";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idBook);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                java.util.Map<String, String> data = new java.util.HashMap<>();
+                data.put("title", rs.getString("Title"));
+                data.put("year", String.valueOf(rs.getInt("AnnoPub")));
+                String authorName = rs.getString("AuthorName");
+                String midName = rs.getString("MidName");
+                String surname = rs.getString("Surname");
+                data.put("author", authorName + " " + (midName != null ? midName + " " : "") + surname);
+                data.put("genre", rs.getString("Genres") != null ? rs.getString("Genres") : "Nessuno");
+                return data;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+    
+    public boolean updateBook(int idBook, String newTitle, Integer newIdAuthor, Integer newAnnoPub) {
+        StringBuilder sql = new StringBuilder("UPDATE Book SET ");
+        List<String> updates = new ArrayList<>();
+        
+        if (newTitle != null && !newTitle.trim().isEmpty()) {
+            updates.add("Title = ?");
+        }
+        if (newIdAuthor != null) {
+            updates.add("IdAuthor = ?");
+        }
+        if (newAnnoPub != null) {
+            updates.add("AnnoPub = ?");
+        }
+        
+        if (updates.isEmpty()) {
+            return false;
+        }
+        
+        sql.append(String.join(", ", updates));
+        sql.append(" WHERE IdBook = ?");
+        
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            int paramIndex = 1;
+            if (newTitle != null && !newTitle.trim().isEmpty()) {
+                ps.setString(paramIndex++, newTitle);
+            }
+            if (newIdAuthor != null) {
+                ps.setInt(paramIndex++, newIdAuthor);
+            }
+            if (newAnnoPub != null) {
+                ps.setInt(paramIndex++, newAnnoPub);
+            }
+            ps.setInt(paramIndex, idBook);
+            
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

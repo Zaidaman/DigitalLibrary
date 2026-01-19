@@ -68,6 +68,9 @@ public class HomeController {
     private MenuItem addExistingBookMenuItem;
 
     @FXML
+    private MenuItem editBookMenuItem;
+
+    @FXML
     private MenuItem removeBookFromLibraryMenuItem;
 
     @FXML
@@ -115,6 +118,7 @@ public class HomeController {
         setupDeleteLibraryMenuItem();
         setupAddBookMenuItem();
         setupAddExistingBookMenuItem();
+        setupEditBookMenuItem();
         setupRemoveBookFromLibraryMenuItem();
         setupEditUserMenuItem();
         setupLogoutMenuItem();
@@ -208,6 +212,201 @@ public class HomeController {
                             loadBooksForLibrary(selectedLibrary);
                         }
                     }
+                });
+            });
+        }
+    }
+
+    private void setupEditBookMenuItem() {
+        if (editBookMenuItem != null) {
+            editBookMenuItem.setOnAction(e -> {
+                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                if (selectedLibrary == null) {
+                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria prima di modificare un libro.");
+                    return;
+                }
+                
+                LibrariesDAO libDAO = DAOFactory.getInstance().getLibrariesDAO();
+                Libraries library = libDAO.findByName(selectedLibrary);
+                if (library == null) return;
+                
+                // Ottieni i libri nella libreria
+                BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
+                List<Book> booksInLibrary = bookDAO.findByLibraryId(library.getIdLibrary());
+                
+                if (booksInLibrary.isEmpty()) {
+                    showAlert("Nessun libro", "Non ci sono libri in questa libreria.");
+                    return;
+                }
+                
+                List<String> bookTitles = booksInLibrary.stream()
+                    .map(Book::getTitle)
+                    .collect(Collectors.toList());
+                
+                // Dialog per selezionare il libro da modificare
+                javafx.scene.control.ChoiceDialog<String> selectDialog = 
+                    new javafx.scene.control.ChoiceDialog<>(bookTitles.get(0), bookTitles);
+                selectDialog.setTitle("Modifica Libro");
+                selectDialog.setHeaderText("Seleziona il libro da modificare");
+                selectDialog.setContentText("Libro:");
+                
+                Optional<String> selectResult = selectDialog.showAndWait();
+                selectResult.ifPresent(bookTitle -> {
+                    int idBook = bookDAO.findIdByTitle(bookTitle);
+                    if (idBook == -1) return;
+                    
+                    // Ottieni i dati completi del libro
+                    var bookData = bookDAO.findBookDetailsById(idBook);
+                    if (bookData == null) return;
+                    
+                    // Dialog per modificare i dati
+                    javafx.scene.control.Dialog<java.util.Map<String, String>> dialog = 
+                        new javafx.scene.control.Dialog<>();
+                    dialog.setTitle("Modifica Libro");
+                    dialog.setHeaderText("Modifica i dati del libro\n(Lascia vuoto per non modificare)");
+                    
+                    javafx.scene.control.ButtonType saveButtonType = 
+                        new javafx.scene.control.ButtonType("Salva", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+                    dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, javafx.scene.control.ButtonType.CANCEL);
+                    
+                    // Campi input
+                    javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+                    grid.setHgap(10);
+                    grid.setVgap(10);
+                    grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+                    
+                    javafx.scene.control.TextField titleField = new javafx.scene.control.TextField();
+                    titleField.setPromptText("Titolo attuale: " + bookData.get("title"));
+                    
+                    javafx.scene.control.TextField yearField = new javafx.scene.control.TextField();
+                    yearField.setPromptText("Anno attuale: " + bookData.get("year"));
+                    
+                    // ComboBox per autore
+                    com.library.dao.AuthorDAO authorDAO = new com.library.dao.AuthorDAO();
+                    List<com.library.models.Author> allAuthors = authorDAO.findAll();
+                    javafx.scene.control.ComboBox<String> authorCombo = new javafx.scene.control.ComboBox<>();
+                    authorCombo.setPromptText("Autore attuale: " + bookData.get("author"));
+                    allAuthors.forEach(author -> 
+                        authorCombo.getItems().add(author.getAuthorName() + " " + 
+                            (author.getMidName() != null ? author.getMidName() + " " : "") + 
+                            author.getSurname()));
+                    
+                    // ComboBox per genere
+                    com.library.dao.GenreDAO genreDAO = new com.library.dao.GenreDAO();
+                    List<com.library.models.Genre> allGenres = genreDAO.findAll();
+                    javafx.scene.control.ComboBox<String> genreCombo = new javafx.scene.control.ComboBox<>();
+                    genreCombo.setPromptText("Genere attuale: " + bookData.get("genre"));
+                    allGenres.forEach(genre -> genreCombo.getItems().add(genre.getGenreName()));
+                    
+                    grid.add(new javafx.scene.control.Label("Nuovo Titolo:"), 0, 0);
+                    grid.add(titleField, 1, 0);
+                    grid.add(new javafx.scene.control.Label("Nuovo Anno:"), 0, 1);
+                    grid.add(yearField, 1, 1);
+                    grid.add(new javafx.scene.control.Label("Nuovo Autore:"), 0, 2);
+                    grid.add(authorCombo, 1, 2);
+                    grid.add(new javafx.scene.control.Label("Nuovo Genere:"), 0, 3);
+                    grid.add(genreCombo, 1, 3);
+                    
+                    dialog.getDialogPane().setContent(grid);
+                    
+                    javafx.application.Platform.runLater(() -> titleField.requestFocus());
+                    
+                    dialog.setResultConverter(dialogButton -> {
+                        if (dialogButton == saveButtonType) {
+                            java.util.Map<String, String> result = new java.util.HashMap<>();
+                            result.put("title", titleField.getText());
+                            result.put("year", yearField.getText());
+                            result.put("author", authorCombo.getValue());
+                            result.put("genre", genreCombo.getValue());
+                            return result;
+                        }
+                        return null;
+                    });
+                    
+                    Optional<java.util.Map<String, String>> result = dialog.showAndWait();
+                    
+                    result.ifPresent(data -> {
+                        String newTitle = data.get("title").trim();
+                        String newYear = data.get("year").trim();
+                        String newAuthor = data.get("author");
+                        String newGenre = data.get("genre");
+                        
+                        // Se tutti i campi sono vuoti, non fare nulla
+                        if (newTitle.isEmpty() && newYear.isEmpty() && newAuthor == null && newGenre == null) {
+                            showAlert("Nessuna modifica", "Non hai modificato nessun dato.");
+                            return;
+                        }
+                        
+                        // Verifica che il titolo non esista già (se modificato)
+                        if (!newTitle.isEmpty() && !newTitle.equals(bookData.get("title"))) {
+                            Book existingBook = bookDAO.findByTitle(newTitle);
+                            if (existingBook != null) {
+                                showAlert("Titolo esistente", "Un libro con questo titolo esiste già.");
+                                return;
+                            }
+                        }
+                        
+                        // Trova IdAuthor se l'autore è stato modificato
+                        Integer newIdAuthor = null;
+                        if (newAuthor != null) {
+                            for (com.library.models.Author author : allAuthors) {
+                                String fullName = author.getAuthorName() + " " + 
+                                    (author.getMidName() != null ? author.getMidName() + " " : "") + 
+                                    author.getSurname();
+                                if (fullName.equals(newAuthor)) {
+                                    newIdAuthor = author.getIdAuthor();
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Trova IdGenre se il genere è stato modificato
+                        Integer newIdGenre = null;
+                        if (newGenre != null) {
+                            for (com.library.models.Genre genre : allGenres) {
+                                if (genre.getGenreName().equals(newGenre)) {
+                                    newIdGenre = genre.getIdGenre();
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Valida anno se fornito
+                        Integer newYearInt = null;
+                        if (!newYear.isEmpty()) {
+                            try {
+                                newYearInt = Integer.parseInt(newYear);
+                                if (newYearInt < 0 || newYearInt > java.time.Year.now().getValue()) {
+                                    showAlert("Anno non valido", "L'anno deve essere compreso tra 0 e " + java.time.Year.now().getValue());
+                                    return;
+                                }
+                            } catch (NumberFormatException ex) {
+                                showAlert("Anno non valido", "Inserisci un numero valido per l'anno.");
+                                return;
+                            }
+                        }
+                        
+                        // Aggiorna il libro
+                        boolean updated = bookDAO.updateBook(
+                            idBook,
+                            newTitle.isEmpty() ? null : newTitle,
+                            newIdAuthor,
+                            newYearInt
+                        );
+                        
+                        // Aggiorna il genere se specificato
+                        if (newIdGenre != null) {
+                            com.library.dao.BookGenreDAO bookGenreDAO = new com.library.dao.BookGenreDAO();
+                            bookGenreDAO.updateGenreForBook(idBook, newIdGenre);
+                        }
+                        
+                        if (updated) {
+                            showAlert("Successo", "I dati del libro sono stati aggiornati con successo!");
+                            loadBooksForLibrary(selectedLibrary); // Ricarica la lista libri
+                        } else {
+                            showAlert("Errore", "Si è verificato un errore durante l'aggiornamento.");
+                        }
+                    });
                 });
             });
         }
