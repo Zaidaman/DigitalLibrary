@@ -12,8 +12,8 @@ insert into genre (GenreName) values
 ('Noir'),
 ('Horror');
 
-insert into libuser (Username, Userpass) values
-('admin', 12345);
+insert into libuser (Username, Userpass, IsAdmin) values
+('admin', 12345, 1);
 
 insert into libraries (LibName) values
 ('Test Library');

@@ -10,6 +10,7 @@
     <top>
         <MenuBar>
             <Menu text="Impostazioni">
+                <MenuItem fx:id="editUserMenuItem" text="Modifica Dati Utente" />
                 <MenuItem fx:id="logoutMenuItem" text="Logout" />
             </Menu>
             <Menu text="Libreria">

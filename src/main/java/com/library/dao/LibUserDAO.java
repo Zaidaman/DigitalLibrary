@@ -87,4 +87,42 @@ public class LibUserDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public boolean update(int idUser, String newUsername, String newPassword) {
+        // Costruisce dinamicamente la query SQL in base ai parametri forniti
+        StringBuilder sql = new StringBuilder("UPDATE LibUser SET ");
+        List<String> updates = new ArrayList<>();
+        
+        if (newUsername != null && !newUsername.trim().isEmpty()) {
+            updates.add("Username = ?");
+        }
+        if (newPassword != null && !newPassword.trim().isEmpty()) {
+            updates.add("UserPass = ?");
+        }
+        
+        if (updates.isEmpty()) {
+            return false; // Nessun campo da aggiornare
+        }
+        
+        sql.append(String.join(", ", updates));
+        sql.append(" WHERE IdUser = ?");
+        
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            int paramIndex = 1;
+            if (newUsername != null && !newUsername.trim().isEmpty()) {
+                ps.setString(paramIndex++, newUsername);
+            }
+            if (newPassword != null && !newPassword.trim().isEmpty()) {
+                ps.setString(paramIndex++, newPassword);
+            }
+            ps.setInt(paramIndex, idUser);
+            
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

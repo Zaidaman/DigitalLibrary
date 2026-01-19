@@ -71,6 +71,9 @@ public class HomeController {
     private MenuItem removeBookFromLibraryMenuItem;
 
     @FXML
+    private MenuItem editUserMenuItem;
+
+    @FXML
     private MenuItem logoutMenuItem;
 
     @FXML
@@ -113,6 +116,7 @@ public class HomeController {
         setupAddBookMenuItem();
         setupAddExistingBookMenuItem();
         setupRemoveBookFromLibraryMenuItem();
+        setupEditUserMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
         setupSort();
@@ -262,6 +266,97 @@ public class HomeController {
                             // Ricarica i libri della libreria
                             loadBooksForLibrary(selectedLibrary);
                         }
+                    }
+                });
+            });
+        }
+    }
+
+    private void setupEditUserMenuItem() {
+        if (editUserMenuItem != null) {
+            editUserMenuItem.setOnAction(e -> {
+                if (currentUser == null) return;
+                
+                // Dialog personalizzata per modificare username e password
+                javafx.scene.control.Dialog<javafx.util.Pair<String, String>> dialog = 
+                    new javafx.scene.control.Dialog<>();
+                dialog.setTitle("Modifica Dati Utente");
+                dialog.setHeaderText("Modifica username e/o password\n(Lascia vuoto per non modificare)");
+                
+                // Pulsanti
+                javafx.scene.control.ButtonType saveButtonType = 
+                    new javafx.scene.control.ButtonType("Salva", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+                dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, javafx.scene.control.ButtonType.CANCEL);
+                
+                // Campi input
+                javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+                grid.setHgap(10);
+                grid.setVgap(10);
+                grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+                
+                javafx.scene.control.TextField usernameField = new javafx.scene.control.TextField();
+                usernameField.setPromptText("Username attuale: " + currentUser.getUsername());
+                javafx.scene.control.PasswordField passwordField = new javafx.scene.control.PasswordField();
+                passwordField.setPromptText("Nuova password");
+                
+                grid.add(new javafx.scene.control.Label("Nuovo Username:"), 0, 0);
+                grid.add(usernameField, 1, 0);
+                grid.add(new javafx.scene.control.Label("Nuova Password:"), 0, 1);
+                grid.add(passwordField, 1, 1);
+                
+                dialog.getDialogPane().setContent(grid);
+                
+                // Richiedi focus sul campo username
+                javafx.application.Platform.runLater(() -> usernameField.requestFocus());
+                
+                // Converti il risultato quando viene premuto il pulsante Salva
+                dialog.setResultConverter(dialogButton -> {
+                    if (dialogButton == saveButtonType) {
+                        return new javafx.util.Pair<>(usernameField.getText(), passwordField.getText());
+                    }
+                    return null;
+                });
+                
+                Optional<javafx.util.Pair<String, String>> result = dialog.showAndWait();
+                
+                result.ifPresent(pair -> {
+                    String newUsername = pair.getKey().trim();
+                    String newPassword = pair.getValue().trim();
+                    
+                    // Se entrambi sono vuoti, non fare nulla
+                    if (newUsername.isEmpty() && newPassword.isEmpty()) {
+                        showAlert("Nessuna modifica", "Non hai modificato nessun dato.");
+                        return;
+                    }
+                    
+                    LibUserDAO userDAO = DAOFactory.getInstance().getLibUserDAO();
+                    
+                    // Se l'username è cambiato, verifica che non esista già
+                    if (!newUsername.isEmpty() && !newUsername.equals(currentUser.getUsername())) {
+                        LibUser existingUser = userDAO.findAll().stream()
+                            .filter(u -> u.getUsername().equals(newUsername))
+                            .findFirst()
+                            .orElse(null);
+                        
+                        if (existingUser != null) {
+                            showAlert("Username già esistente", "L'username \"" + newUsername + "\" è già in uso.");
+                            return;
+                        }
+                    }
+                    
+                    // Aggiorna i dati
+                    boolean updated = userDAO.update(
+                        currentUser.getIdUser(),
+                        newUsername.isEmpty() ? null : newUsername,
+                        newPassword.isEmpty() ? null : newPassword
+                    );
+                    
+                    if (updated) {
+                        // Ricarica l'utente dal database con i dati aggiornati
+                        currentUser = userDAO.findById(currentUser.getIdUser());
+                        showAlert("Successo", "I tuoi dati sono stati aggiornati con successo!");
+                    } else {
+                        showAlert("Errore", "Si è verificato un errore durante l'aggiornamento dei dati.");
                     }
                 });
             });
