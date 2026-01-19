@@ -80,6 +80,12 @@ public class HomeController {
     private MenuItem logoutMenuItem;
 
     @FXML
+    private MenuItem addAuthorMenuItem;
+
+    @FXML
+    private MenuItem addGenreMenuItem;
+
+    @FXML
     private ComboBox<String> sortCombo;
     
     @FXML
@@ -120,6 +126,8 @@ public class HomeController {
         setupAddExistingBookMenuItem();
         setupEditBookMenuItem();
         setupRemoveBookFromLibraryMenuItem();
+        setupAddAuthorMenuItem();
+        setupAddGenreMenuItem();
         setupEditUserMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
@@ -375,7 +383,7 @@ public class HomeController {
                         Integer newYearInt = null;
                         if (!newYear.isEmpty()) {
                             try {
-                                newYearInt = Integer.parseInt(newYear);
+                                newYearInt = Integer.valueOf(newYear);
                                 if (newYearInt < 0 || newYearInt > java.time.Year.now().getValue()) {
                                     showAlert("Anno non valido", "L'anno deve essere compreso tra 0 e " + java.time.Year.now().getValue());
                                     return;
@@ -467,6 +475,46 @@ public class HomeController {
                         }
                     }
                 });
+            });
+        }
+    }
+
+    private void setupAddAuthorMenuItem() {
+        if (addAuthorMenuItem != null) {
+            addAuthorMenuItem.setOnAction(e -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/fxml/add-author-view.fxml"));
+                    Parent root = loader.load();
+
+                    Stage stage = new Stage();
+                    stage.setTitle("Aggiungi Autore");
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.setScene(new Scene(root));
+                    stage.showAndWait();
+                } catch (IOException ex) {
+                    showAlert("Errore", "Impossibile aprire la finestra per aggiungere un autore: " + ex.getMessage());
+                }
+            });
+        }
+    }
+
+    private void setupAddGenreMenuItem() {
+        if (addGenreMenuItem != null) {
+            addGenreMenuItem.setOnAction(e -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/fxml/add-genre-view.fxml"));
+                    Parent root = loader.load();
+
+                    Stage stage = new Stage();
+                    stage.setTitle("Aggiungi Genere");
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.setScene(new Scene(root));
+                    stage.showAndWait();
+                } catch (IOException ex) {
+                    showAlert("Errore", "Impossibile aprire la finestra per aggiungere un genere: " + ex.getMessage());
+                }
             });
         }
     }

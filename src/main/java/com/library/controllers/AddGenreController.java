@@ -8,7 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class AddGenreDialogController {
+public class AddGenreController {
     @FXML private TextField genreNameField;
     @FXML private Button saveGenreBtn;
     @FXML private Button cancelBtn;

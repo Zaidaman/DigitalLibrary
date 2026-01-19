@@ -8,7 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class AddAuthorDialogController {
+public class AddAuthorController {
     @FXML private TextField nameField;
     @FXML private TextField midNameField;
     @FXML private TextField surnameField;

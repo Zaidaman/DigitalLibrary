@@ -161,7 +161,7 @@ public class AddBookController {
     private void openAddAuthorDialog() {
         try {
         javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-            getClass().getResource("/fxml/add-author-dialog.fxml"));
+            getClass().getResource("/fxml/add-author-view.fxml"));
         javafx.scene.Parent root = loader.load();
 
         javafx.stage.Stage dialogStage = new javafx.stage.Stage();
@@ -170,7 +170,7 @@ public class AddBookController {
         dialogStage.setScene(new javafx.scene.Scene(root));
         dialogStage.showAndWait();
 
-        AddAuthorDialogController controller = loader.getController();
+        AddAuthorController controller = loader.getController();
         Author newAuthor = controller.getCreatedAuthor();
         if (newAuthor != null) {
             // Aggiorna suggerimenti o seleziona l'autore appena creato
@@ -217,7 +217,7 @@ public class AddBookController {
     private void openAddGenreDialog() {
         try {
         javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-            getClass().getResource("/fxml/add-genre-dialog.fxml"));
+            getClass().getResource("/fxml/add-genre-view.fxml"));
         javafx.scene.Parent root = loader.load();
 
         javafx.stage.Stage dialogStage = new javafx.stage.Stage();
@@ -226,7 +226,7 @@ public class AddBookController {
         dialogStage.setScene(new javafx.scene.Scene(root));
         dialogStage.showAndWait();
 
-        AddGenreDialogController controller = loader.getController();
+        AddGenreController controller = loader.getController();
         Genre newGenre = controller.getCreatedGenre();
         if (newGenre != null) {
             genreField.setText(newGenre.getGenreName());

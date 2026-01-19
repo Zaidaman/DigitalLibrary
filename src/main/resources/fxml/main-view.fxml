@@ -24,6 +24,10 @@
                 <MenuItem fx:id="editBookMenuItem" text="Modifica Libro" />
                 <MenuItem fx:id="removeBookFromLibraryMenuItem" text="Rimuovi Libro dalla Libreria" />
             </Menu>
+            <Menu text="Autori e Generi">
+                <MenuItem fx:id="addAuthorMenuItem" text="Aggiungi Autore" />
+                <MenuItem fx:id="addGenreMenuItem" text="Aggiungi Genere" />
+            </Menu>
         </MenuBar>
     </top>
 
