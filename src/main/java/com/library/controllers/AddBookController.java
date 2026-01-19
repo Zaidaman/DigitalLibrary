@@ -17,8 +17,9 @@ import com.library.models.Libraries;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -32,14 +33,14 @@ public class AddBookController {
     @FXML private TextField yearField;
     @FXML private TextField authorField;
     @FXML private Button addAuthorBtn;
-    @FXML private ListView<String> authorSuggestionsList;
     @FXML private TextField genreField;
     @FXML private Button addGenreBtn;
-    @FXML private ListView<String> genreSuggestionsList;
     @FXML private Button saveBookBtn;
 
     private File selectedBookFile;
     private LibUser currentUser;
+    private ContextMenu authorContextMenu;
+    private ContextMenu genreContextMenu;
 
     public void setUser(LibUser user) {
         this.currentUser = user;
@@ -49,6 +50,10 @@ public class AddBookController {
     @FXML
     @SuppressWarnings("unused")
     private void initialize() {
+        // Inizializza i ContextMenu
+        authorContextMenu = new ContextMenu();
+        genreContextMenu = new ContextMenu();
+        
         // Property Binding: disabilita saveBookBtn se i campi obbligatori sono vuoti
         saveBookBtn.disableProperty().bind(
             titleField.textProperty().isEmpty()
@@ -69,11 +74,10 @@ public class AddBookController {
             if (isNowFocused) {
                 suggestAuthors(authorField.getText());
             } else {
-                // Nascondi lista quando perde il focus (con un piccolo delay)
+                // Nascondi menu quando perde il focus (con un piccolo delay)
                 javafx.application.Platform.runLater(() -> {
-                    if (!authorSuggestionsList.isFocused()) {
-                        authorSuggestionsList.setVisible(false);
-                        authorSuggestionsList.setManaged(false);
+                    if (!authorContextMenu.isShowing()) {
+                        authorContextMenu.hide();
                     }
                 });
             }
@@ -84,33 +88,12 @@ public class AddBookController {
             if (isNowFocused) {
                 suggestGenres(genreField.getText());
             } else {
-                // Nascondi lista quando perde il focus (con un piccolo delay)
+                // Nascondi menu quando perde il focus (con un piccolo delay)
                 javafx.application.Platform.runLater(() -> {
-                    if (!genreSuggestionsList.isFocused()) {
-                        genreSuggestionsList.setVisible(false);
-                        genreSuggestionsList.setManaged(false);
+                    if (!genreContextMenu.isShowing()) {
+                        genreContextMenu.hide();
                     }
                 });
-            }
-        });
-        
-        // Permetti di selezionare autore dalla lista
-        authorSuggestionsList.setOnMouseClicked(e -> {
-            String selected = authorSuggestionsList.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                authorField.setText(selected);
-                authorSuggestionsList.setVisible(false);
-                authorSuggestionsList.setManaged(false);
-            }
-        });
-        
-        // Permetti di selezionare genere dalla lista
-        genreSuggestionsList.setOnMouseClicked(e -> {
-            String selected = genreSuggestionsList.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                genreField.setText(selected);
-                genreSuggestionsList.setVisible(false);
-                genreSuggestionsList.setManaged(false);
             }
         });
     }
@@ -145,18 +128,34 @@ public class AddBookController {
     private void suggestAuthors(String query) {
         AuthorDAO authorDAO = DAOFactory.getInstance().getAuthorDAO();
         List<Author> authors = authorDAO.findAll();
-        authorSuggestionsList.getItems().clear();
+        authorContextMenu.getItems().clear();
         
-        // Usa stream per filtrare e mappare
+        // Usa stream per filtrare e creare menu items
         authors.stream()
             .filter(a -> query == null || query.trim().isEmpty() || 
                          a.getAuthorName().toLowerCase().contains(query.toLowerCase()) ||
                          a.getSurname().toLowerCase().contains(query.toLowerCase()))
-            .map(a -> a.getAuthorName() + " " + a.getSurname())
-            .forEach(name -> authorSuggestionsList.getItems().add(name));
+            .limit(10) // Limita a 10 suggerimenti per non sovraccaricare il menu
+            .forEach(author -> {
+                String fullName = author.getAuthorName() + " " + author.getSurname();
+                Label menuLabel = new Label(fullName);
+                menuLabel.setStyle("-fx-padding: 5 10; -fx-cursor: hand;");
+                CustomMenuItem item = new CustomMenuItem(menuLabel, false);
+                item.setOnAction(e -> {
+                    authorField.setText(fullName);
+                    authorContextMenu.hide();
+                });
+                authorContextMenu.getItems().add(item);
+            });
         
-        authorSuggestionsList.setVisible(!authorSuggestionsList.getItems().isEmpty());
-        authorSuggestionsList.setManaged(!authorSuggestionsList.getItems().isEmpty());
+        // Mostra il menu se ci sono suggerimenti
+        if (!authorContextMenu.getItems().isEmpty()) {
+            if (!authorContextMenu.isShowing()) {
+                authorContextMenu.show(authorField, javafx.geometry.Side.BOTTOM, 0, 0);
+            }
+        } else {
+            authorContextMenu.hide();
+        }
     }
 
     private void openAddAuthorDialog() {
@@ -186,17 +185,33 @@ public class AddBookController {
     private void suggestGenres(String query) {
         GenreDAO genreDAO = DAOFactory.getInstance().getGenreDAO();
         List<Genre> genres = genreDAO.findAll();
-        genreSuggestionsList.getItems().clear();
+        genreContextMenu.getItems().clear();
         
-        // Usa stream per filtrare e mappare
+        // Usa stream per filtrare e creare menu items
         genres.stream()
             .filter(g -> query == null || query.trim().isEmpty() || 
                          g.getGenreName().toLowerCase().contains(query.toLowerCase()))
-            .map(Genre::getGenreName)
-            .forEach(name -> genreSuggestionsList.getItems().add(name));
+            .limit(10) // Limita a 10 suggerimenti per non sovraccaricare il menu
+            .forEach(genre -> {
+                String genreName = genre.getGenreName();
+                Label menuLabel = new Label(genreName);
+                menuLabel.setStyle("-fx-padding: 5 10; -fx-cursor: hand;");
+                CustomMenuItem item = new CustomMenuItem(menuLabel, false);
+                item.setOnAction(e -> {
+                    genreField.setText(genreName);
+                    genreContextMenu.hide();
+                });
+                genreContextMenu.getItems().add(item);
+            });
         
-        genreSuggestionsList.setVisible(!genreSuggestionsList.getItems().isEmpty());
-        genreSuggestionsList.setManaged(!genreSuggestionsList.getItems().isEmpty());
+        // Mostra il menu se ci sono suggerimenti
+        if (!genreContextMenu.getItems().isEmpty()) {
+            if (!genreContextMenu.isShowing()) {
+                genreContextMenu.show(genreField, javafx.geometry.Side.BOTTOM, 0, 0);
+            }
+        } else {
+            genreContextMenu.hide();
+        }
     }
 
     private void openAddGenreDialog() {
