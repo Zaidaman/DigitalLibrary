@@ -52,6 +52,7 @@
                     <items>
                         <CheckMenuItem fx:id="pdfFilterItem" text="PDF"/>
                         <CheckMenuItem fx:id="epubFilterItem" text="EPUB"/>
+                        <CheckMenuItem fx:id="txtFilterItem" text="TXT"/>
                     </items>
                 </MenuButton>
                 <Button fx:id="clearFiltersBtn" text="Reset"/>

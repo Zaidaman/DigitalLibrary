@@ -97,7 +97,10 @@ public class HomeController implements LibraryObserver {
     
     @FXML
     private CheckMenuItem epubFilterItem;
-    
+
+    @FXML
+    private CheckMenuItem txtFilterItem;
+
     @FXML
     private Button clearFiltersBtn;
 
@@ -820,6 +823,7 @@ public class HomeController implements LibraryObserver {
 
             if (pdfFilterItem.isSelected()) {
                 epubFilterItem.setSelected(false);
+                txtFilterItem.setSelected(false);
                 activeFilterType = "PDF";
             } else {
                 activeFilterType = "NONE";
@@ -832,12 +836,24 @@ public class HomeController implements LibraryObserver {
             if (epubFilterItem.isSelected()) {
 
                 pdfFilterItem.setSelected(false);
+                txtFilterItem.setSelected(false);
                 activeFilterType = "EPUB";
 
             } else {
                 activeFilterType = "NONE";
             }
 
+            applyFiltersAndSort();
+        });
+
+        txtFilterItem.setOnAction(e -> {
+            if (txtFilterItem.isSelected()) {
+                pdfFilterItem.setSelected(false);
+                epubFilterItem.setSelected(false);
+                activeFilterType = "TXT";
+            } else {
+                activeFilterType = "NONE";
+            }
             applyFiltersAndSort();
         });
     }
@@ -851,6 +867,7 @@ public class HomeController implements LibraryObserver {
 
                 pdfFilterItem.setSelected(false);
                 epubFilterItem.setSelected(false);
+                txtFilterItem.setSelected(false);
 
                 filterMenuBtn.setText("Filtra");
 
@@ -874,6 +891,11 @@ public class HomeController implements LibraryObserver {
             if ("EPUB".equals(activeFilterType)) {
                 filterMenuBtn.setText("EPUB");
                 return !path.endsWith(".epub");
+            }
+
+            if ("TXT".equals(activeFilterType)) {
+                filterMenuBtn.setText("TXT");
+                return !path.endsWith(".txt");
             }
 
             return false;

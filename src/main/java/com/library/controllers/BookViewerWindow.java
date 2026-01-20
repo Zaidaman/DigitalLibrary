@@ -6,6 +6,7 @@ import com.library.models.Book;
 import com.library.strategies.BookDisplayStrategy;
 import com.library.strategies.EpubDisplayStrategy;
 import com.library.strategies.PdfDisplayStrategy;
+import com.library.strategies.TxtDisplayStrategy;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -80,6 +81,8 @@ public class BookViewerWindow {
             return new PdfDisplayStrategy();
         } else if (filePath.toLowerCase().endsWith(".epub")) {
             return new EpubDisplayStrategy();
+        } else if (filePath.toLowerCase().endsWith(".txt")) {
+            return new TxtDisplayStrategy();
         }
         return null; // Formato non supportato
     }

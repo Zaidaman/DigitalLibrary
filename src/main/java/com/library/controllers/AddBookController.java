@@ -114,7 +114,8 @@ public class AddBookController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
-            new FileChooser.ExtensionFilter("EPUB Files", "*.epub")
+            new FileChooser.ExtensionFilter("EPUB Files", "*.epub"),
+            new FileChooser.ExtensionFilter("TEXT Files", "*.txt")
         );
         Stage stage = (Stage) selectBookFileBtn.getScene().getWindow();
         File file = fileChooser.showOpenDialog(stage);
