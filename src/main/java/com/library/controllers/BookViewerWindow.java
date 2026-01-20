@@ -50,8 +50,21 @@ public class BookViewerWindow {
                 contentArea.getChildren().add(errorLabel);
             }
 
-            Scene scene = new Scene(contentArea, 900, 700);
+            // Calcolare dimensioni proporzionate all'altezza dello schermo
+            javafx.stage.Screen screen = javafx.stage.Screen.getPrimary();
+            javafx.geometry.Rectangle2D bounds = screen.getVisualBounds();
+            
+            // Utilizzare il 90% dell'altezza dello schermo per dimensioni più grandi
+            double windowHeight = bounds.getHeight() * 0.9;
+            // Proporzione rettangolare più larga (circa A4: 1:1.414)
+            double windowWidth = windowHeight * 0.75;
+            
+            Scene scene = new Scene(contentArea, windowWidth, windowHeight);
             stage.setScene(scene);
+            
+            // Centrare la finestra sullo schermo
+            stage.centerOnScreen();
+            
             stage.show();
 
         } catch (Exception e) {
