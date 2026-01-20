@@ -10,6 +10,11 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/fxml/login-view.fxml"));
         Scene scene = new Scene(loader.load(), 400, 350);
         stage.setTitle("Login - Digital Library");
+
+        scene.getStylesheets().add(
+            getClass().getResource("/css/login.css").toExternalForm()
+        );
+
         stage.setScene(scene);
         stage.show();
     }

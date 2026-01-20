@@ -1,0 +1,36 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #f4f6f9;
+}
+
+/* Sidebar */
+.sidebar {
+    -fx-background-color: #2c3e50;
+}
+
+/* Bottoni */
+.button {
+    -fx-background-radius: 8;
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.button:hover {
+    -fx-background-color: #b92929;
+}
+
+/* ListView */
+.list-view {
+    -fx-background-color: transparent;
+}
+
+.list-cell {
+    -fx-padding: 10;
+}
+
+/* Cards libri */
+.book-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 8, 0, 0, 3);
+}

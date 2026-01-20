@@ -115,6 +115,21 @@ public class HomeController implements LibraryObserver {
 
     @FXML
     public void initialize() {
+        if (contentArea.getScene() != null) {
+            contentArea.getScene().getStylesheets().add(
+                getClass().getResource("/css/main.css").toExternalForm()
+           );
+        } else {
+            // Se la scena non è ancora pronta, posticipa
+            contentArea.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if (newScene != null) {
+                    newScene.getStylesheets().add(
+                        getClass().getResource("/css/main.css").toExternalForm()
+                    );
+                }
+            });
+        }
+        
         // L'inizializzazione vera avviene dopo che l'utente è stato settato
         // (tramite setUser)
         setupAddLibraryMenuItem();
@@ -976,7 +991,6 @@ public class HomeController implements LibraryObserver {
 
         if (books.isEmpty()) {
             Label emptyLabel = new Label("Nessun libro presente in questa libreria.");
-            emptyLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
             contentArea.getChildren().add(emptyLabel);
             return;
         }
@@ -1003,65 +1017,51 @@ public class HomeController implements LibraryObserver {
     }
     
     private VBox createBookCard(Book book) {
-        VBox card = new VBox(10);
+        VBox card = new VBox(8);
         card.setAlignment(Pos.CENTER);
         card.setPrefWidth(150);
-        card.setMaxWidth(150);
         card.setCursor(Cursor.HAND);
-        
-        // Rettangolo che rappresenta il libro
-        Region bookRect = new Region();
-        bookRect.setPrefSize(150, 200);
-        bookRect.setStyle("-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); " +
-                         "-fx-background-radius: 5; " +
-                         "-fx-border-color: #2c3e50; " +
-                         "-fx-border-width: 2; " +
-                         "-fx-border-radius: 5; " +
-                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 2);");
-        
-        // Titolo del libro
+
+        // ----- COVER STACK -----
+
+        StackPane coverPane = new StackPane();
+        coverPane.setPrefSize(150, 200);
+
+        Region bookCover = new Region();
+        bookCover.setPrefSize(150, 200);
+        bookCover.getStyleClass().add("book-cover");
+
         Label titleLabel = new Label(book.getTitle());
         titleLabel.setWrapText(true);
-        titleLabel.setMaxWidth(150);
+        titleLabel.setMaxWidth(130);
         titleLabel.setAlignment(Pos.CENTER);
-        titleLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-alignment: center;");
-        
-        card.getChildren().addAll(bookRect, titleLabel);
-        
-        // Click sul card per aprire il libro
+        titleLabel.getStyleClass().add("book-title-overlay");
+
+        StackPane.setAlignment(titleLabel, Pos.CENTER);
+
+        coverPane.getChildren().addAll(bookCover, titleLabel);
+
+        card.getChildren().add(coverPane);
+
+        // CLICK OPEN BOOK
         card.setOnMouseClicked(e -> {
-            if (book.getFilePath() != null && !book.getFilePath().isEmpty()) {
+            if (book.getFilePath() != null) {
                 String userBasePath = currentUser != null ? currentUser.getChosenPath() : null;
-                BookViewerWindow viewer = new BookViewerWindow(book, userBasePath);
-                viewer.show();
+                new BookViewerWindow(book, userBasePath).show();
             }
         });
-        
-        // Effetto hover
-        card.setOnMouseEntered(e -> {
-            bookRect.setStyle("-fx-background-color: linear-gradient(to bottom, #5dade2, #3498db); " +
-                            "-fx-background-radius: 5; " +
-                            "-fx-border-color: #2c3e50; " +
-                            "-fx-border-width: 2; " +
-                            "-fx-border-radius: 5; " +
-                            "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 3);");
-        });
-        
-        card.setOnMouseExited(e -> {
-            bookRect.setStyle("-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); " +
-                            "-fx-background-radius: 5; " +
-                            "-fx-border-color: #2c3e50; " +
-                            "-fx-border-width: 2; " +
-                            "-fx-border-radius: 5; " +
-                            "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 2);");
-        });
-        
+
+        // HOVER EFFECT
+        card.setOnMouseEntered(e -> card.getStyleClass().add("book-hover"));
+        card.setOnMouseExited(e -> card.getStyleClass().remove("book-hover"));
+
+        card.getStyleClass().add("book-card");
+
         return card;
     }
 
     private void showDefaultMessage() {
         Label defaultLabel = new Label("Benvenuto nella tua Libreria Digitale!");
-        defaultLabel.setStyle("-fx-font-size: 20px;");
         contentArea.getChildren().setAll(defaultLabel);
     }
     
