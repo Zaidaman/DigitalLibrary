@@ -31,54 +31,39 @@
         </MenuBar>
     </top>
 
-    <!-- Sidebar sinistra + pannello libri affiancato -->
+    <!-- Sidebar sinistra -->
     <left>
-        <HBox spacing="0">
-
-            <!-- Librerie -->
-            <VBox spacing="10"
-                style="-fx-background-color: #2c3e50; -fx-padding: 10; -fx-pref-width: 220;">
-                <Label text="Librerie" style="-fx-text-fill: white; -fx-font-size: 18px;"/>
-                <ListView fx:id="libraryList" />
-            </VBox>
-
-            <!-- Libri -->
-            <VBox fx:id="booksPanel"
-                spacing="10"
-                style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-pref-width: 300;"
-                visible="false" managed="false">
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <ComboBox fx:id="sortCombo" promptText="Ordina"/>
-                    <MenuButton fx:id="filterMenuBtn" text="Filtra">
-                        <items>
-                            <CheckMenuItem fx:id="pdfFilterItem" text="PDF"/>
-                            <CheckMenuItem fx:id="epubFilterItem" text="EPUB"/>
-                        </items>
-                    </MenuButton>
-                    <Button fx:id="clearFiltersBtn" text="Reset"/>
-                </HBox>
-                <Label text="Libri della Libreria" style="-fx-font-size: 18px;" />
-                <ListView fx:id="booksList"/>
-            </VBox>
-
-            <!-- Toggle Panel -->
-            <VBox alignment="CENTER"
-                style="-fx-background-color: #bdc3c7; -fx-padding: 5;">
-                <Button fx:id="toggleBooksBtn"
-                        text="⮜"
-                        style="-fx-font-size: 16px; -fx-padding: 5;"/>
-            </VBox>
-        </HBox>
+        <VBox spacing="10"
+            style="-fx-background-color: #2c3e50; -fx-padding: 10; -fx-pref-width: 220;">
+            <Label text="Librerie" style="-fx-text-fill: white; -fx-font-size: 18px;"/>
+            <ListView fx:id="libraryList" />
+        </VBox>
     </left>
 
     <!-- Area centrale -->
     <center>
-        <StackPane fx:id="contentArea" style="-fx-padding: 20;">
-            <Label text="Benvenuto nella tua Libreria Digitale!"
-                   style="-fx-font-size: 20px;"/>
-        </StackPane>
         <VBox spacing="10" style="-fx-padding: 20;">
-            <StackPane fx:id="contentArea" style="-fx-padding: 10; -fx-background-color: white;"/>
+            <!-- Barra filtri e ordinamento -->
+            <HBox spacing="10" alignment="CENTER_LEFT" fx:id="filterBar" visible="false" managed="false">
+                <Label text="Ordina per:" style="-fx-font-size: 14px;"/>
+                <ComboBox fx:id="sortCombo" promptText="Ordina"/>
+                <Label text="Filtra per tipo:" style="-fx-font-size: 14px; -fx-padding: 0 0 0 20;"/>
+                <MenuButton fx:id="filterMenuBtn" text="Filtra">
+                    <items>
+                        <CheckMenuItem fx:id="pdfFilterItem" text="PDF"/>
+                        <CheckMenuItem fx:id="epubFilterItem" text="EPUB"/>
+                    </items>
+                </MenuButton>
+                <Button fx:id="clearFiltersBtn" text="Reset"/>
+            </HBox>
+            
+            <!-- Area contenuto -->
+            <StackPane fx:id="contentArea" style="-fx-padding: 10; -fx-background-color: white;" VBox.vgrow="ALWAYS">
+                <Label text="Benvenuto nella tua Libreria Digitale!"
+                       style="-fx-font-size: 20px;"/>
+            </StackPane>
+            
+            <!-- Pulsanti navigazione -->
             <HBox spacing="10" alignment="CENTER">
                 <Button fx:id="prevBtn" text="◀ Capitolo precedente" visible="false"/>
                 <Button fx:id="nextBtn" text="Capitolo successivo ▶" visible="false"/>

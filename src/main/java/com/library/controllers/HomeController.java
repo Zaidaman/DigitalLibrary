@@ -21,6 +21,9 @@ import com.library.observers.LibrarySubject;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -31,6 +34,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -42,16 +48,10 @@ public class HomeController implements LibraryObserver {
     private ListView<String> libraryList;
 
     @FXML
-    private VBox booksPanel;
-
-    @FXML
-    private ListView<String> booksList;
-
-    @FXML
     private StackPane contentArea;
-
+    
     @FXML
-    private Button toggleBooksBtn;
+    private HBox filterBar;
 
     @FXML
     private MenuItem addLibraryMenuItem;
@@ -101,8 +101,6 @@ public class HomeController implements LibraryObserver {
     @FXML
     private Button clearFiltersBtn;
 
-    private boolean booksPanelVisible = true;
-
     private LibUser currentUser;
     private final LibrarySubject librarySubject = new LibrarySubject();
 
@@ -115,11 +113,6 @@ public class HomeController implements LibraryObserver {
     public void initialize() {
         // L'inizializzazione vera avviene dopo che l'utente è stato settato
         // (tramite setUser)
-        booksPanel.setVisible(false);
-        booksPanel.setManaged(false);
-        booksPanelVisible = true;
-        setupToggleButton();
-        setupBookSelection();
         setupAddLibraryMenuItem();
         setupShareLibraryMenuItem();
         setupDeleteLibraryMenuItem();
@@ -799,8 +792,9 @@ public class HomeController implements LibraryObserver {
                     
                     // Aggiorna la lista
                     loadLibraries();
-                    booksList.getItems().clear();
                     showDefaultMessage();
+                    filterBar.setVisible(false);
+                    filterBar.setManaged(false);
                 }
             });
         }
@@ -949,58 +943,92 @@ public class HomeController implements LibraryObserver {
         // Aggiorna UI
         refreshBooksList(currentLibraryBooks);
 
-        // Mostra pannello libri
-        booksPanel.setVisible(true);
-        booksPanel.setManaged(true);
-        booksPanelVisible = true;
-        toggleBooksBtn.setText("⮜");
+        // Mostra barra filtri
+        filterBar.setVisible(true);
+        filterBar.setManaged(true);
     }
 
     private void refreshBooksList(List<Book> books) {
-        booksList.getItems().clear();
+        contentArea.getChildren().clear();
 
         if (books.isEmpty()) {
-            booksList.getItems().add("Nessun libro presente in questa libreria.");
-            showDefaultMessage();
+            Label emptyLabel = new Label("Nessun libro presente in questa libreria.");
+            emptyLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
+            contentArea.getChildren().add(emptyLabel);
             return;
         }
 
-        // Usa stream per popolare la lista
-        books.stream()
-            .map(Book::getTitle)
-            .forEach(title -> booksList.getItems().add(title));
-    }
+        // Crea un FlowPane per visualizzare i libri come rettangoli
+        FlowPane bookGrid = new FlowPane();
+        bookGrid.setHgap(20);
+        bookGrid.setVgap(20);
+        bookGrid.setPadding(new Insets(10));
+        bookGrid.setAlignment(Pos.TOP_LEFT);
 
-    private void setupToggleButton() {
-        toggleBooksBtn.setOnAction(e -> {
-            if (booksPanelVisible) {
-                booksPanel.setVisible(false);
-                booksPanel.setManaged(false);
-                toggleBooksBtn.setText("⮞");
-                booksPanelVisible = false;
-            } else {
-                booksPanel.setVisible(true);
-                booksPanel.setManaged(true);
-                toggleBooksBtn.setText("⮜");
-                booksPanelVisible = true;
+        // Crea un rettangolo per ogni libro
+        for (Book book : books) {
+            VBox bookCard = createBookCard(book);
+            bookGrid.getChildren().add(bookCard);
+        }
+
+        contentArea.getChildren().add(bookGrid);
+    }
+    
+    private VBox createBookCard(Book book) {
+        VBox card = new VBox(10);
+        card.setAlignment(Pos.CENTER);
+        card.setPrefWidth(150);
+        card.setMaxWidth(150);
+        card.setCursor(Cursor.HAND);
+        
+        // Rettangolo che rappresenta il libro
+        Region bookRect = new Region();
+        bookRect.setPrefSize(150, 200);
+        bookRect.setStyle("-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); " +
+                         "-fx-background-radius: 5; " +
+                         "-fx-border-color: #2c3e50; " +
+                         "-fx-border-width: 2; " +
+                         "-fx-border-radius: 5; " +
+                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 2);");
+        
+        // Titolo del libro
+        Label titleLabel = new Label(book.getTitle());
+        titleLabel.setWrapText(true);
+        titleLabel.setMaxWidth(150);
+        titleLabel.setAlignment(Pos.CENTER);
+        titleLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-alignment: center;");
+        
+        card.getChildren().addAll(bookRect, titleLabel);
+        
+        // Click sul card per aprire il libro
+        card.setOnMouseClicked(e -> {
+            if (book.getFilePath() != null && !book.getFilePath().isEmpty()) {
+                String userBasePath = currentUser != null ? currentUser.getChosenPath() : null;
+                BookViewerWindow viewer = new BookViewerWindow(book, userBasePath);
+                viewer.show();
             }
         });
-    }
-
-    private void setupBookSelection() {
-        booksList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.equals("Nessun libro presente in questa libreria.")) {
-                BookDAO bookDAO = new BookDAO();
-                Book book = bookDAO.findByTitle(newVal);
-
-                if (book != null && book.getFilePath() != null && !book.getFilePath().isEmpty()) {
-                    // Passa il percorso base dell'utente al viewer
-                    String userBasePath = currentUser != null ? currentUser.getChosenPath() : null;
-                    BookViewerWindow viewer = new BookViewerWindow(book, userBasePath);
-                    viewer.show();
-                }
-            }
+        
+        // Effetto hover
+        card.setOnMouseEntered(e -> {
+            bookRect.setStyle("-fx-background-color: linear-gradient(to bottom, #5dade2, #3498db); " +
+                            "-fx-background-radius: 5; " +
+                            "-fx-border-color: #2c3e50; " +
+                            "-fx-border-width: 2; " +
+                            "-fx-border-radius: 5; " +
+                            "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 3);");
         });
+        
+        card.setOnMouseExited(e -> {
+            bookRect.setStyle("-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); " +
+                            "-fx-background-radius: 5; " +
+                            "-fx-border-color: #2c3e50; " +
+                            "-fx-border-width: 2; " +
+                            "-fx-border-radius: 5; " +
+                            "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 2);");
+        });
+        
+        return card;
     }
 
     private void showDefaultMessage() {
