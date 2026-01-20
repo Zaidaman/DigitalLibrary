@@ -33,6 +33,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -980,20 +981,25 @@ public class HomeController implements LibraryObserver {
             return;
         }
 
-        // Crea un FlowPane per visualizzare i libri come rettangoli
         FlowPane bookGrid = new FlowPane();
         bookGrid.setHgap(20);
         bookGrid.setVgap(20);
         bookGrid.setPadding(new Insets(10));
         bookGrid.setAlignment(Pos.TOP_LEFT);
 
-        // Crea un rettangolo per ogni libro
         for (Book book : books) {
             VBox bookCard = createBookCard(book);
             bookGrid.getChildren().add(bookCard);
         }
 
-        contentArea.getChildren().add(bookGrid);
+        ScrollPane scrollPane = new ScrollPane(bookGrid);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+        contentArea.getChildren().add(scrollPane);
     }
     
     private VBox createBookCard(Book book) {
