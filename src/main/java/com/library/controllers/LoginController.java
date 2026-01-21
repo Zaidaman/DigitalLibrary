@@ -177,8 +177,11 @@ public class LoginController {
             // Salva il percorso selezionato nel database
             userDAO.updateChosenPathAndFirstLogin(user.getIdUser(), selectedDirectory.getAbsolutePath());
         } else {
-            // Se l'utente annulla, usa una cartella predefinita
-            String defaultPath = System.getProperty("user.home") + java.io.File.separator + "DigitalLibrary";
+            // Se l'utente annulla, usa la cartella dell'admin o una cartella predefinita
+            String defaultPath = getAdminChosenPath();
+            if (defaultPath == null || defaultPath.isEmpty()) {
+                defaultPath = System.getProperty("user.home") + java.io.File.separator + "DigitalLibrary";
+            }
             userDAO.updateChosenPathAndFirstLogin(user.getIdUser(), defaultPath);
             
             javafx.scene.control.Alert infoAlert = new javafx.scene.control.Alert(
@@ -188,5 +191,13 @@ public class LoginController {
             infoAlert.setContentText("I tuoi libri verranno salvati in: " + defaultPath);
             infoAlert.showAndWait();
         }
+    }
+    
+    private String getAdminChosenPath() {
+        LibUser admin = userDAO.findAll().stream()
+            .filter(u -> u.getUsername().equals("admin"))
+            .findFirst().orElse(null);
+        
+        return (admin != null) ? admin.getChosenPath() : null;
     }
 }
