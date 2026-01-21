@@ -16,6 +16,10 @@ dependencies {
     implementation 'org.openjfx:javafx-web:21'
     implementation 'org.openjfx:javafx-swing:21'
 
+    // JUnit 5
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     // ICEPDF support
     implementation files('libs/icepdf-core-7.3.1.jar')
     implementation files('libs/icepdf-viewer-7.3.1.jar')
@@ -38,4 +42,8 @@ javafx {
 
 application {
     mainClass = 'com.library.Main'
+}
+
+test {
+    useJUnitPlatform()
 }

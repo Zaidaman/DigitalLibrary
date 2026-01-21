@@ -16,6 +16,7 @@ public class AddGenreController {
     private Genre createdGenre;
 
     @FXML
+    @SuppressWarnings("unused") // Called by JavaFX FXML loader
     private void initialize() {
         saveGenreBtn.setOnAction(e -> saveGenre());
         cancelBtn.setOnAction(e -> closeDialog());

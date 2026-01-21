@@ -283,8 +283,14 @@ public class RepositoryManager {
     private void configureWindowsPermissions() {
         try {
             // Esegui icacls per dare permessi al gruppo Users
-            String command = "icacls \"" + centralRepositoryPath + "\" /grant Users:(OI)(CI)M /T";
-            Process process = Runtime.getRuntime().exec(command);
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                "icacls", 
+                centralRepositoryPath, 
+                "/grant", 
+                "Users:(OI)(CI)M", 
+                "/T"
+            );
+            Process process = processBuilder.start();
             int exitCode = process.waitFor();
             
             if (exitCode == 0) {
