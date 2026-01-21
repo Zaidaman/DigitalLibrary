@@ -36,6 +36,11 @@ public class RepositoryManager {
         
         // Setup automatico del repository centrale
         setupCentralRepository();
+        
+        // Sincronizza i file da library-data se siamo in production
+        if (isProduction) {
+            syncFromLibraryData();
+        }
     }
     
     public static synchronized RepositoryManager getInstance() {
@@ -347,5 +352,127 @@ public class RepositoryManager {
         String subfolder = centralRepositoryPath + File.separator + fileType.toLowerCase();
         ensureDirectoryExists(subfolder);
         return subfolder;
+    }
+    
+    /**
+     * Sincronizza i file dalla cartella library-data al repository centrale.
+     * Questo metodo viene chiamato automaticamente in modalità production per copiare
+     * i file di esempio dalla cartella di sviluppo al repository di sistema.
+     * 
+     * Scansiona le sottocartelle (pdf, epub, txt) in library-data e copia i file
+     * che non sono già presenti nel repository centrale.
+     */
+    private void syncFromLibraryData() {
+        File libraryDataDir = new File("library-data");
+        
+        // Verifica se la cartella library-data esiste
+        if (!libraryDataDir.exists() || !libraryDataDir.isDirectory()) {
+            System.out.println("[RepositoryManager] library-data not found, skipping sync.");
+            return;
+        }
+        
+        System.out.println("========================================");
+        System.out.println("Syncing files from library-data...");
+        System.out.println("========================================");
+        
+        int copiedCount = 0;
+        int skippedCount = 0;
+        
+        // Scansiona le sottocartelle standard
+        String[] subfolders = {"pdf", "epub", "txt"};
+        for (String folder : subfolders) {
+            File sourceFolder = new File(libraryDataDir, folder);
+            
+            if (!sourceFolder.exists() || !sourceFolder.isDirectory()) {
+                continue;
+            }
+            
+            // Ottieni tutti i file nella sottocartella
+            File[] files = sourceFolder.listFiles();
+            if (files == null) {
+                continue;
+            }
+            
+            for (File file : files) {
+                if (!file.isFile()) {
+                    continue; // Salta le directory
+                }
+                
+                // Costruisci il percorso relativo
+                String relativeFilePath = folder + File.separator + file.getName();
+                
+                // Verifica se il file esiste già nel repository centrale
+                if (existsInRepository(relativeFilePath)) {
+                    System.out.println("[SKIP] " + relativeFilePath + " (already exists)");
+                    skippedCount++;
+                    continue;
+                }
+                
+                // Copia il file nel repository centrale
+                try {
+                    String destPath = saveToRepository(file, relativeFilePath);
+                    System.out.println("[COPY] " + relativeFilePath + " -> " + destPath);
+                    copiedCount++;
+                } catch (IOException e) {
+                    System.err.println("[ERROR] Failed to copy " + relativeFilePath + ": " + e.getMessage());
+                }
+            }
+        }
+        
+        System.out.println("========================================");
+        System.out.println("Sync completed!");
+        System.out.println("Files copied: " + copiedCount);
+        System.out.println("Files skipped: " + skippedCount);
+        System.out.println("========================================");
+    }
+    
+    /**
+     * Sincronizza manualmente i file da library-data al repository centrale.
+     * Questo metodo può essere chiamato pubblicamente per forzare una sincronizzazione.
+     * 
+     * @return numero di file copiati
+     */
+    public int manualSyncFromLibraryData() {
+        File libraryDataDir = new File("library-data");
+        
+        if (!libraryDataDir.exists() || !libraryDataDir.isDirectory()) {
+            System.err.println("[RepositoryManager] library-data folder not found.");
+            return 0;
+        }
+        
+        int copiedCount = 0;
+        String[] subfolders = {"pdf", "epub", "txt"};
+        
+        for (String folder : subfolders) {
+            File sourceFolder = new File(libraryDataDir, folder);
+            
+            if (!sourceFolder.exists() || !sourceFolder.isDirectory()) {
+                continue;
+            }
+            
+            File[] files = sourceFolder.listFiles();
+            if (files == null) {
+                continue;
+            }
+            
+            for (File file : files) {
+                if (!file.isFile()) {
+                    continue;
+                }
+                
+                String relativeFilePath = folder + File.separator + file.getName();
+                
+                if (!existsInRepository(relativeFilePath)) {
+                    try {
+                        saveToRepository(file, relativeFilePath);
+                        copiedCount++;
+                    } catch (IOException e) {
+                        System.err.println("[ERROR] Failed to copy " + relativeFilePath + ": " + e.getMessage());
+                    }
+                }
+            }
+        }
+        
+        return copiedCount;
     }
 }
