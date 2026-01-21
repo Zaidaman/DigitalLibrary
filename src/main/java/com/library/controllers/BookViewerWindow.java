@@ -1,12 +1,11 @@
 package com.library.controllers;
 
-import java.io.File;
-
 import com.library.models.Book;
 import com.library.strategies.BookDisplayStrategy;
 import com.library.strategies.EpubDisplayStrategy;
 import com.library.strategies.PdfDisplayStrategy;
 import com.library.strategies.TxtDisplayStrategy;
+import com.library.utils.RepositoryManager;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -88,24 +87,20 @@ public class BookViewerWindow {
     }
     
     /**
-     * Risolve il percorso del file cercando in diverse posizioni
+     * Risolve il percorso del file usando RepositoryManager.
+     * Cerca prima nella cartella utente, poi nel repository centrale.
+     * Se trovato solo nel centrale, lo copia automaticamente nella cartella utente.
      */
     private String resolveFilePath(String filePath) {
-        // Prova prima nella cartella scelta dall'utente
-        if (userBasePath != null && !userBasePath.trim().isEmpty()) {
-            File userFile = new File(userBasePath + File.separator + filePath);
-            if (userFile.exists()) {
-                return userFile.getAbsolutePath();
-            }
+        RepositoryManager repoManager = RepositoryManager.getInstance();
+        String resolvedPath = repoManager.resolveFilePath(filePath, userBasePath);
+        
+        if (resolvedPath != null) {
+            return resolvedPath;
         }
         
-        // Fallback: prova in library-data
-        File dataFile = new File("library-data/" + filePath);
-        if (dataFile.exists()) {
-            return dataFile.getAbsolutePath();
-        }
-        
-        // Se nessuno esiste, restituisce il percorso originale
+        // Ultimo fallback: restituisce il percorso originale
+        System.err.println("Warning: File not found in repository or user folder: " + filePath);
         return filePath;
     }
 }

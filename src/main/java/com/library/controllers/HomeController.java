@@ -18,6 +18,7 @@ import com.library.models.LibUser;
 import com.library.models.Libraries;
 import com.library.observers.LibraryObserver;
 import com.library.observers.LibrarySubject;
+import com.library.utils.RepositoryManager;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -224,17 +225,41 @@ public class HomeController implements LibraryObserver {
                 
                 Optional<String> result = dialog.showAndWait();
                 result.ifPresent(bookTitle -> {
-                    Book book = bookDAO.findByTitle(bookTitle);
-                    if (book != null) {
-                        // Trova l'ID del libro
-                        int idBook = bookDAO.findIdByTitle(bookTitle);
-                        if (idBook != -1) {
-                            BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
-                            bookLibDAO.insert(new com.library.models.BookLib(idBook, library.getIdLibrary()));
-                            showAlert("Successo", "Libro aggiunto alla libreria!");
-                            // Ricarica i libri della libreria
-                            loadBooksForLibrary(selectedLibrary);
+                    try {
+                        Book book = bookDAO.findByTitle(bookTitle);
+                        if (book != null) {
+                            // Trova l'ID del libro
+                            int idBook = bookDAO.findIdByTitle(bookTitle);
+                            if (idBook != -1) {
+                                // Usa RepositoryManager per copiare il file nella cartella utente
+                                RepositoryManager repoManager = RepositoryManager.getInstance();
+                                String userChosenPath = currentUser.getChosenPath();
+                                if (userChosenPath == null || userChosenPath.trim().isEmpty()) {
+                                    userChosenPath = System.getProperty("user.home") + java.io.File.separator + "DigitalLibrary";
+                                }
+                                
+                                // Verifica se il file esiste nel repository centrale
+                                if (!repoManager.existsInRepository(book.getFilePath())) {
+                                    showAlert("Errore", "Il file del libro non è stato trovato nel repository centrale.");
+                                    return;
+                                }
+                                
+                                // Copia il file nella cartella utente se non esiste già
+                                if (!repoManager.existsInUserFolder(book.getFilePath(), userChosenPath)) {
+                                    repoManager.copyToUserFolder(book.getFilePath(), userChosenPath);
+                                }
+                                
+                                // Aggiungi alla libreria
+                                BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
+                                bookLibDAO.insert(new com.library.models.BookLib(idBook, library.getIdLibrary()));
+                                showAlert("Successo", "Libro copiato e aggiunto alla libreria!");
+                                // Ricarica i libri della libreria
+                                loadBooksForLibrary(selectedLibrary);
+                            }
                         }
+                    } catch (java.io.IOException ex) {
+                        showAlert("Errore", "Errore durante la copia del file: " + ex.getMessage());
+                        System.err.println("Errore durante la copia del file: " + ex.getMessage());
                     }
                 });
             });

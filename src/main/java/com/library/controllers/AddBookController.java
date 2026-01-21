@@ -13,6 +13,7 @@ import com.library.models.Author;
 import com.library.models.Genre;
 import com.library.models.LibUser;
 import com.library.models.Libraries;
+import com.library.utils.RepositoryManager;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -266,19 +267,20 @@ public class AddBookController {
             if (library == null) return; // Libreria non trovata
 
             String ext = selectedBookFile.getName().toLowerCase().endsWith(".epub") ? "epub" : "pdf";
-            // Usa la cartella scelta dall'utente
+            String relativeFilePath = ext + "/" + selectedBookFile.getName();
+            
+            // Usa RepositoryManager per gestire il salvataggio
+            RepositoryManager repoManager = RepositoryManager.getInstance();
+            
+            // 1. Salva nel repository centrale
+            repoManager.saveToRepository(selectedBookFile, relativeFilePath);
+            
+            // 2. Salva nella cartella personale dell'utente
             String userChosenPath = currentUser.getChosenPath();
             if (userChosenPath == null || userChosenPath.trim().isEmpty()) {
                 userChosenPath = System.getProperty("user.home") + java.io.File.separator + "DigitalLibrary";
             }
-            String destPath = userChosenPath + java.io.File.separator + ext + java.io.File.separator;
-            java.io.File destFolder = new java.io.File(destPath);
-            if (!destFolder.exists()) destFolder.mkdirs();
-            java.io.File destFile = new java.io.File(destPath + selectedBookFile.getName());
-            java.nio.file.Files.copy(selectedBookFile.toPath(), destFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-
-            // Salva con percorso relativo: pdf/file.pdf o epub/file.epub
-            String relativeFilePath = ext + "/" + selectedBookFile.getName();
+            repoManager.copyToUserFolder(relativeFilePath, userChosenPath);
             
             BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
             // Usa Builder pattern per creare Book
