@@ -30,6 +30,9 @@
         <TextField fx:id="genreField" promptText="Cerca genere" prefWidth="200"/>
         <Button fx:id="addGenreBtn" text="+"/>
     </HBox>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <CheckBox fx:id="privateBookCheckBox" text="Libro privato (solo io posso leggerlo e modificarlo)"/>
+    </HBox>
     <HBox spacing="10" alignment="CENTER_RIGHT">
         <Button fx:id="saveBookBtn" text="Salva libro" style="-fx-font-size: 16px;"/>
     </HBox>

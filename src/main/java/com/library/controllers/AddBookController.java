@@ -17,6 +17,7 @@ import com.library.utils.RepositoryManager;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
@@ -36,6 +37,7 @@ public class AddBookController {
     @FXML private Button addAuthorBtn;
     @FXML private TextField genreField;
     @FXML private Button addGenreBtn;
+    @FXML private CheckBox privateBookCheckBox;
     @FXML private Button saveBookBtn;
 
     private File selectedBookFile;
@@ -299,6 +301,12 @@ public class AddBookController {
 
             com.library.dao.BookGenreDAO bookGenreDAO = DAOFactory.getInstance().getBookGenreDAO();
             bookGenreDAO.insert(new com.library.models.BookGenre(bookId, genre.getIdGenre()));
+            
+            // Se il libro è privato, aggiungi l'accesso esclusivo per l'utente corrente
+            if (privateBookCheckBox.isSelected()) {
+                com.library.dao.BookAccessDAO bookAccessDAO = DAOFactory.getInstance().getBookAccessDAO();
+                bookAccessDAO.insert(new com.library.models.BookAccess(bookId, currentUser.getIdUser()));
+            }
             
             // Mostra notifica di successo
             showNotification("Libro aggiunto con successo!");

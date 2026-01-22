@@ -243,6 +243,20 @@ public class HomeController implements LibraryObserver {
                             // Trova l'ID del libro
                             int idBook = bookDAO.findIdByTitle(bookTitle);
                             if (idBook != -1) {
+                                // Verifica i permessi di accesso
+                                com.library.dao.BookAccessDAO bookAccessDAO = DAOFactory.getInstance().getBookAccessDAO();
+                                List<com.library.models.BookAccess> accesses = bookAccessDAO.findByBookId(idBook);
+                                
+                                // Se ci sono restrizioni e l'utente corrente non ha accesso, blocca l'aggiunta
+                                if (!accesses.isEmpty()) {
+                                    boolean hasAccess = accesses.stream()
+                                        .anyMatch(access -> access.getIdUser() == currentUser.getIdUser());
+                                    if (!hasAccess) {
+                                        showAlert("Accesso negato", "Non hai i permessi per aggiungere questo libro privato.");
+                                        return;
+                                    }
+                                }
+                                
                                 // Usa RepositoryManager per copiare il file nella cartella utente
                                 RepositoryManager repoManager = RepositoryManager.getInstance();
                                 String userChosenPath = currentUser.getChosenPath();
@@ -315,6 +329,20 @@ public class HomeController implements LibraryObserver {
                 selectResult.ifPresent(bookTitle -> {
                     int idBook = bookDAO.findIdByTitle(bookTitle);
                     if (idBook == -1) return;
+                    
+                    // Verifica i permessi di accesso
+                    com.library.dao.BookAccessDAO bookAccessDAO = DAOFactory.getInstance().getBookAccessDAO();
+                    List<com.library.models.BookAccess> accesses = bookAccessDAO.findByBookId(idBook);
+                    
+                    // Se ci sono restrizioni e l'utente corrente non ha accesso, blocca la modifica
+                    if (!accesses.isEmpty()) {
+                        boolean hasAccess = accesses.stream()
+                            .anyMatch(access -> access.getIdUser() == currentUser.getIdUser());
+                        if (!hasAccess) {
+                            showAlert("Accesso negato", "Non hai i permessi per modificare questo libro privato.");
+                            return;
+                        }
+                    }
                     
                     // Ottieni i dati completi del libro
                     var bookData = bookDAO.findBookDetailsById(idBook);
@@ -1282,9 +1310,30 @@ public class HomeController implements LibraryObserver {
         if (library == null) return;
 
         BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
+        com.library.dao.BookAccessDAO bookAccessDAO = DAOFactory.getInstance().getBookAccessDAO();
 
-        // Salva lista originale (serve per filtri/sort)
-        currentLibraryBooks = bookDAO.findByLibraryId(library.getIdLibrary());
+        // Ottieni tutti i libri della libreria
+        List<Book> allBooks = bookDAO.findByLibraryId(library.getIdLibrary());
+        
+        // Filtra i libri in base ai permessi di accesso
+        // Un libro è visibile se:
+        // 1. Non ha restrizioni (nessuna riga in BookAccess)
+        // 2. L'utente corrente ha accesso esplicito (esiste riga in BookAccess per questo utente)
+        currentLibraryBooks = allBooks.stream()
+            .filter(book -> {
+                int bookId = bookDAO.findIdByTitle(book.getTitle());
+                if (bookId == -1) return false; // Libro non trovato
+                
+                List<com.library.models.BookAccess> accesses = bookAccessDAO.findByBookId(bookId);
+                // Se non ci sono restrizioni, il libro è pubblico
+                if (accesses.isEmpty()) {
+                    return true;
+                }
+                // Altrimenti verifica se l'utente corrente ha accesso
+                return accesses.stream()
+                    .anyMatch(access -> access.getIdUser() == currentUser.getIdUser());
+            })
+            .collect(Collectors.toList());
 
         // Aggiorna UI
         refreshBooksList(currentLibraryBooks);
