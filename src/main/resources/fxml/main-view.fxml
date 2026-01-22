@@ -11,6 +11,11 @@
         <MenuBar>
             <Menu text="Impostazioni">
                 <MenuItem fx:id="editUserMenuItem" text="Modifica Dati Utente" />
+                <MenuItem fx:id="addAuthorMenuItem" text="Aggiungi Autore" />
+                <MenuItem fx:id="addGenreMenuItem" text="Aggiungi Genere" />
+                <SeparatorMenuItem fx:id="adminSeparator" visible="false" />
+                <MenuItem fx:id="deleteUserMenuItem" text="[ADMIN] Elimina Utente" visible="false" />
+                <MenuItem fx:id="deleteBookFromRepoMenuItem" text="[ADMIN] Elimina Libro da Repository" visible="false" />
                 <MenuItem fx:id="logoutMenuItem" text="Logout" />
             </Menu>
             <Menu text="Libreria">
@@ -23,10 +28,6 @@
                 <MenuItem fx:id="addExistingBookMenuItem" text="Aggiungi Libro alla Libreria" />
                 <MenuItem fx:id="editBookMenuItem" text="Modifica Libro" />
                 <MenuItem fx:id="removeBookFromLibraryMenuItem" text="Rimuovi Libro dalla Libreria" />
-            </Menu>
-            <Menu text="Autori e Generi">
-                <MenuItem fx:id="addAuthorMenuItem" text="Aggiungi Autore" />
-                <MenuItem fx:id="addGenreMenuItem" text="Aggiungi Genere" />
             </Menu>
         </MenuBar>
     </top>

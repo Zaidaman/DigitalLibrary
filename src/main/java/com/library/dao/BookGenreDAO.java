@@ -79,4 +79,15 @@ public class BookGenreDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public void deleteByBookId(int idBook) {
+        String sql = "DELETE FROM BookGenre WHERE IdBook = ?";
+        try (Connection conn = DbUtils.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idBook);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -125,4 +125,15 @@ public class LibUserDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public void delete(int idUser) {
+        String sql = "DELETE FROM LibUser WHERE IdUser = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

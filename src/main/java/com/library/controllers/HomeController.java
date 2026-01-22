@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.library.dao.BookDAO;
+import com.library.dao.BookGenreDAO;
 import com.library.dao.BookLibDAO;
 import com.library.dao.DAOFactory;
 import com.library.dao.LibAccessDAO;
@@ -89,6 +90,15 @@ public class HomeController implements LibraryObserver {
     private MenuItem addGenreMenuItem;
 
     @FXML
+    private MenuItem deleteUserMenuItem;
+
+    @FXML
+    private MenuItem deleteBookFromRepoMenuItem;
+
+    @FXML
+    private javafx.scene.control.SeparatorMenuItem adminSeparator;
+
+    @FXML
     private ComboBox<String> sortCombo;
     
     @FXML
@@ -143,6 +153,8 @@ public class HomeController implements LibraryObserver {
         setupAddAuthorMenuItem();
         setupAddGenreMenuItem();
         setupEditUserMenuItem();
+        setupDeleteUserMenuItem();
+        setupDeleteBookFromRepoMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
         setupSort();
@@ -844,6 +856,276 @@ public class HomeController implements LibraryObserver {
         }
     }
 
+    private void setupAdminFeatures() {
+        if (currentUser != null && currentUser.isAdmin()) {
+            if (deleteUserMenuItem != null) {
+                deleteUserMenuItem.setVisible(true);
+            }
+            if (deleteBookFromRepoMenuItem != null) {
+                deleteBookFromRepoMenuItem.setVisible(true);
+            }
+            if (adminSeparator != null) {
+                adminSeparator.setVisible(true);
+            }
+        }
+    }
+
+    private void setupDeleteUserMenuItem() {
+        if (deleteUserMenuItem != null) {
+            deleteUserMenuItem.setOnAction(e -> {
+                if (currentUser == null || !currentUser.isAdmin()) {
+                    showAlert("Accesso Negato", "Solo gli amministratori possono eliminare utenti.");
+                    return;
+                }
+
+                LibUserDAO userDAO = DAOFactory.getInstance().getLibUserDAO();
+                List<LibUser> allUsers = userDAO.findAll();
+                
+                // Crea lista di utenti (escludi l'admin corrente)
+                List<String> usernames = allUsers.stream()
+                    .filter(u -> u.getIdUser() != currentUser.getIdUser())
+                    .map(LibUser::getUsername)
+                    .collect(Collectors.toList());
+
+                if (usernames.isEmpty()) {
+                    showAlert("Nessun Utente", "Non ci sono utenti da eliminare.");
+                    return;
+                }
+
+                // Dialog per selezionare l'utente
+                javafx.scene.control.ChoiceDialog<String> dialog = 
+                    new javafx.scene.control.ChoiceDialog<>(usernames.get(0), usernames);
+                dialog.setTitle("Elimina Utente");
+                dialog.setHeaderText("Seleziona l'utente da eliminare");
+                dialog.setContentText("Utente:");
+
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresent(username -> {
+                    // Conferma eliminazione
+                    javafx.scene.control.Alert confirmAlert = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.CONFIRMATION);
+                    confirmAlert.setTitle("Conferma Eliminazione");
+                    confirmAlert.setHeaderText("Sei sicuro di voler eliminare l'utente " + username + "?");
+                    confirmAlert.setContentText("Questa operazione eliminerà l'utente dal database e la sua cartella locale.");
+
+                    Optional<javafx.scene.control.ButtonType> confirmation = confirmAlert.showAndWait();
+                    if (confirmation.isPresent() && confirmation.get() == javafx.scene.control.ButtonType.OK) {
+                        LibUser userToDelete = allUsers.stream()
+                            .filter(u -> u.getUsername().equals(username))
+                            .findFirst()
+                            .orElse(null);
+
+                        if (userToDelete != null) {
+                            try {
+                                // Elimina cartella locale se esiste
+                                String chosenPath = userToDelete.getChosenPath();
+                                boolean folderDeleted = false;
+                                if (chosenPath != null && !chosenPath.isEmpty()) {
+                                    java.io.File userFolder = new java.io.File(chosenPath);
+                                    System.out.println("Tentativo di eliminare cartella: " + userFolder.getAbsolutePath());
+                                    if (userFolder.exists() && userFolder.isDirectory()) {
+                                        folderDeleted = deleteDirectory(userFolder);
+                                        if (folderDeleted) {
+                                            System.out.println("Cartella utente eliminata con successo: " + chosenPath);
+                                        } else {
+                                            System.err.println("Impossibile eliminare completamente la cartella: " + chosenPath);
+                                        }
+                                    } else {
+                                        System.out.println("Cartella non trovata o non è una directory: " + chosenPath);
+                                    }
+                                }
+
+                                // Elimina tutti gli accessi dell'utente
+                                LibAccessDAO accessDAO = DAOFactory.getInstance().getLibAccessDAO();
+                                List<LibAccess> userAccesses = accessDAO.findByUserId(userToDelete.getIdUser());
+                                for (LibAccess access : userAccesses) {
+                                    accessDAO.deleteByUserAndLibrary(userToDelete.getIdUser(), access.getIdLibrary());
+                                }
+
+                                // Elimina l'utente dal database
+                                userDAO.delete(userToDelete.getIdUser());
+
+                                String message = "Utente " + username + " eliminato con successo dal database.";
+                                if (folderDeleted) {
+                                    message += "\nCartella locale eliminata.";
+                                } else if (chosenPath != null && !chosenPath.isEmpty()) {
+                                    message += "\nATTENZIONE: La cartella locale potrebbe non essere stata eliminata completamente.";
+                                }
+                                showAlert("Successo", message);
+                            } catch (Exception ex) {
+                                showAlert("Errore", "Errore durante l'eliminazione: " + ex.getMessage());
+                            }
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    private void setupDeleteBookFromRepoMenuItem() {
+        if (deleteBookFromRepoMenuItem != null) {
+            deleteBookFromRepoMenuItem.setOnAction(e -> {
+                if (currentUser == null || !currentUser.isAdmin()) {
+                    showAlert("Accesso Negato", "Solo gli amministratori possono eliminare libri dal repository.");
+                    return;
+                }
+
+                BookDAO bookDAO = DAOFactory.getInstance().getBookDAO();
+                List<Book> allBooks = bookDAO.findAll();
+
+                if (allBooks.isEmpty()) {
+                    showAlert("Nessun Libro", "Non ci sono libri nel repository.");
+                    return;
+                }
+
+                // Crea lista di titoli
+                List<String> bookTitles = allBooks.stream()
+                    .map(Book::getTitle)
+                    .collect(Collectors.toList());
+
+                // Dialog per selezionare il libro
+                javafx.scene.control.ChoiceDialog<String> dialog = 
+                    new javafx.scene.control.ChoiceDialog<>(bookTitles.get(0), bookTitles);
+                dialog.setTitle("Elimina Libro");
+                dialog.setHeaderText("Seleziona il libro da eliminare dal repository");
+                dialog.setContentText("Libro:");
+
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresent(title -> {
+                    // Conferma eliminazione
+                    javafx.scene.control.Alert confirmAlert = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.CONFIRMATION);
+                    confirmAlert.setTitle("Conferma Eliminazione");
+                    confirmAlert.setHeaderText("Sei sicuro di voler eliminare " + title + "?");
+                    confirmAlert.setContentText("Questa operazione eliminerà il libro dal database e dal repository fisico.");
+
+                    Optional<javafx.scene.control.ButtonType> confirmation = confirmAlert.showAndWait();
+                    if (confirmation.isPresent() && confirmation.get() == javafx.scene.control.ButtonType.OK) {
+                        Book bookToDelete = allBooks.stream()
+                            .filter(b -> b.getTitle().equals(title))
+                            .findFirst()
+                            .orElse(null);
+
+                        if (bookToDelete != null) {
+                            try {
+                                // Trova l'ID del libro
+                                int bookId = bookDAO.findIdByTitle(title);
+                                
+                                // Elimina il file fisico dalla cartella library-data
+                                String filePath = bookToDelete.getFilePath();
+                                boolean fileDeletedFromRepo = false;
+                                int filesDeletedFromUsers = 0;
+                                
+                                if (filePath != null && !filePath.isEmpty()) {
+                                    // Elimina da library-data (aggiungi il prefisso se manca)
+                                    String repoPath = filePath.startsWith("library-data") ? filePath : "library-data/" + filePath;
+                                    java.io.File repoFile = new java.io.File(repoPath);
+                                    System.out.println("Percorso file da eliminare (library-data): " + repoFile.getAbsolutePath());
+                                    System.out.println("File esiste? " + repoFile.exists());
+                                    
+                                    if (repoFile.exists()) {
+                                        fileDeletedFromRepo = repoFile.delete();
+                                        if (fileDeletedFromRepo) {
+                                            System.out.println("File eliminato da library-data: " + repoPath);
+                                        } else {
+                                            System.err.println("Impossibile eliminare il file da library-data: " + repoPath);
+                                        }
+                                    } else {
+                                        System.err.println("File non trovato in library-data: " + repoPath);
+                                    }
+                                    
+                                    // Elimina dalle cartelle locali degli utenti
+                                    LibUserDAO userDAO = DAOFactory.getInstance().getLibUserDAO();
+                                    List<LibUser> allUsers = userDAO.findAll();
+                                    
+                                    for (LibUser user : allUsers) {
+                                        String chosenPath = user.getChosenPath();
+                                        if (chosenPath != null && !chosenPath.isEmpty()) {
+                                            // Costruisci il percorso nella cartella dell'utente
+                                            String userFilePath = chosenPath + "/" + filePath;
+                                            java.io.File userFile = new java.io.File(userFilePath);
+                                            
+                                            if (userFile.exists()) {
+                                                if (userFile.delete()) {
+                                                    filesDeletedFromUsers++;
+                                                    System.out.println("File eliminato dalla cartella di " + user.getUsername() + ": " + userFilePath);
+                                                } else {
+                                                    System.err.println("Impossibile eliminare file dalla cartella di " + user.getUsername() + ": " + userFilePath);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Elimina le relazioni BookGenre
+                                BookGenreDAO bookGenreDAO = DAOFactory.getInstance().getBookGenreDAO();
+                                bookGenreDAO.deleteByBookId(bookId);
+
+                                // Elimina le relazioni BookLib
+                                BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
+                                bookLibDAO.deleteByBookId(bookId);
+
+                                // Elimina il libro dal database
+                                bookDAO.delete(bookId);
+
+                                String message = "Libro \"" + title + "\" eliminato con successo dal database.";
+                                if (fileDeletedFromRepo) {
+                                    message += "\nFile eliminato da library-data.";
+                                }
+                                if (filesDeletedFromUsers > 0) {
+                                    message += "\nFile eliminato da " + filesDeletedFromUsers + " cartella/e utente.";
+                                }
+                                if (!fileDeletedFromRepo && filePath != null && !filePath.isEmpty()) {
+                                    message += "\nATTENZIONE: Il file potrebbe non essere stato eliminato completamente.";
+                                }
+                                showAlert("Successo", message);
+                                
+                                // Ricarica la libreria corrente se una è selezionata
+                                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                                if (selectedLibrary != null) {
+                                    loadBooksForLibrary(selectedLibrary);
+                                }
+                            } catch (Exception ex) {
+                                showAlert("Errore", "Errore durante l'eliminazione: " + ex.getMessage());
+                            }
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    private boolean deleteDirectory(java.io.File directory) {
+        if (!directory.exists()) {
+            return false;
+        }
+        
+        boolean success = true;
+        java.io.File[] files = directory.listFiles();
+        if (files != null) {
+            for (java.io.File file : files) {
+                if (file.isDirectory()) {
+                    if (!deleteDirectory(file)) {
+                        success = false;
+                        System.err.println("Impossibile eliminare sottodirectory: " + file.getAbsolutePath());
+                    }
+                } else {
+                    if (!file.delete()) {
+                        success = false;
+                        System.err.println("Impossibile eliminare file: " + file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        
+        if (!directory.delete()) {
+            success = false;
+            System.err.println("Impossibile eliminare directory: " + directory.getAbsolutePath());
+        }
+        
+        return success;
+    }
+
    private void setupSort() {
         sortCombo.getItems().addAll(
                 "Nessuno",
@@ -966,6 +1248,7 @@ public class HomeController implements LibraryObserver {
     // Metodo per ricevere l'utente loggato
     public void setUser(LibUser user) {
         this.currentUser = user;
+        setupAdminFeatures();
         loadLibraries();
         setupLibrarySelection();
     }
