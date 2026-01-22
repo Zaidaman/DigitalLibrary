@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="com.library.controllers.PreferencesController"
+      spacing="20" 
+      style="-fx-padding: 20;">
+
+    <Label text="Personalizza l'applicazione" 
+           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+    
+    <Separator/>
+    
+    <!-- TEMA -->
+    <VBox spacing="10">
+        <Label text="Tema" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+        <HBox spacing="20">
+            <RadioButton fx:id="lightThemeRadio" text="Chiaro" selected="true">
+                <toggleGroup>
+                    <ToggleGroup fx:id="themeGroup"/>
+                </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="darkThemeRadio" text="Scuro" toggleGroup="$themeGroup"/>
+        </HBox>
+    </VBox>
+    
+    <Separator/>
+    
+    <!-- DIMENSIONE CARD -->
+    <VBox spacing="10">
+        <Label text="Dimensione card libri" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+        <HBox spacing="20">
+            <RadioButton fx:id="smallCardRadio" text="Piccole">
+                <toggleGroup>
+                    <ToggleGroup fx:id="cardSizeGroup"/>
+                </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="mediumCardRadio" text="Medie" selected="true" toggleGroup="$cardSizeGroup"/>
+            <RadioButton fx:id="largeCardRadio" text="Grandi" toggleGroup="$cardSizeGroup"/>
+        </HBox>
+    </VBox>
+    
+    <Separator/>
+    
+    <Region VBox.vgrow="ALWAYS"/>
+    
+    <!-- PULSANTI -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="cancelButton" 
+                text="Annulla" 
+                prefWidth="100"
+                style="-fx-background-color: #95a5a6;"/>
+        <Button fx:id="saveButton" 
+                text="Salva" 
+                prefWidth="100"
+                style="-fx-background-color: #27ae60;"/>
+    </HBox>
+    
+</VBox>

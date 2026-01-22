@@ -1,27 +1,27 @@
 /* ===========================
-   LOGIN LIGHT THEME
+   LOGIN DARK THEME
    =========================== */
 
 /* SCENE BACKGROUND */
 #loginRoot {
     -fx-font-family: "Segoe UI", sans-serif;
-    -fx-background-color: #f4f6f9;   /* chiaro */
+    -fx-background-color: #1a1a1a;
     -fx-alignment: center;
 }
 
 /* LOGIN CARD */
 .login-container {
-    -fx-background-color: #ffffff;   /* bianco */
-    -fx-padding: 35;                 /* stesso padding del dark */
+    -fx-background-color: #2a2a2a;   /* colore scuro */
+    -fx-padding: 35;                 /* stesso padding del light */
     -fx-spacing: 15;                 /* stesso spacing */
     -fx-max-width: 350;              /* stessa larghezza */
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 8, 0, 0, 3);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 15, 0, 0, 5);
     -fx-alignment: center;
 }
 
 /* TITLE */
 .login-container > .label {
-    -fx-text-fill: #2c3e50;          /* testo scuro per contrasto */
+    -fx-text-fill: #e0e0e0;          /* testo chiaro */
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
@@ -29,9 +29,9 @@
 /* TEXT INPUT */
 .login-container .text-field,
 .login-container .password-field {
-    -fx-background-color: #f0f0f0;   /* chiaro */
-    -fx-text-fill: #2c3e50;          /* testo scuro */
-    -fx-prompt-text-fill: #888888;   /* prompt grigio */
+    -fx-background-color: #333333;   /* colore scuro textbox */
+    -fx-text-fill: #ffffff;          /* testo bianco */
+    -fx-prompt-text-fill: #9a9a9a;   /* prompt grigio chiaro */
     -fx-background-radius: 8;
     -fx-padding: 8 10;
     -fx-font-size: 13px;
@@ -41,14 +41,14 @@
 /* FOCUS EFFECT */
 .login-container .text-field:focused,
 .login-container .password-field:focused {
-    -fx-border-color: #3498db;       /* stesso colore focus del dark */
+    -fx-border-color: #3498db;
     -fx-border-radius: 8;
-    -fx-background-color: #e8e8e8;   /* leggermente più scuro quando focus */
+    -fx-background-color: #363636;
 }
 
 /* BUTTONS */
 .login-container .button {
-    -fx-background-color: #3498db;   /* stesso colore bottoni light */
+    -fx-background-color: #2980b9;
     -fx-text-fill: white;
     -fx-font-size: 13px;
     -fx-background-radius: 8;
@@ -57,12 +57,12 @@
 }
 
 .login-container .button:hover {
-    -fx-background-color: #5dade2;   /* hover come il dark */
+    -fx-background-color: #3498db;
 }
 
 /* MESSAGE LABEL */
 .login-container #messageLabel {
-    -fx-text-fill: #e74c3c;          /* rosso errore */
+    -fx-text-fill: #e74c3c;
     -fx-font-size: 12px;
 }
 

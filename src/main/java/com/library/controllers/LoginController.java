@@ -13,7 +13,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import com.library.models.UserPreferences;
 
 public class LoginController {
     @FXML
@@ -22,6 +24,8 @@ public class LoginController {
     private PasswordField passwordField;
     @FXML
     private Button loginButton;
+    @FXML
+    private VBox rootPane;
     // @FXML
     // private Button registerButton;
     @FXML
@@ -34,6 +38,7 @@ public class LoginController {
     private void initialize() {
         // Imposta il bottone di login come default (si attiva premendo Enter)
         loginButton.setDefaultButton(true);
+        applySavedTheme();
     }
 
     @FXML
@@ -199,5 +204,38 @@ public class LoginController {
             .findFirst().orElse(null);
         
         return (admin != null) ? admin.getChosenPath() : null;
+    }
+
+    private void applySavedTheme() {
+
+        rootPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+
+            if (newScene != null) {
+
+                UserPreferences prefs = new UserPreferences();
+                applyTheme(newScene, prefs);
+
+            }
+        });
+    }
+
+    private void applyTheme(Scene scene, UserPreferences prefs) {
+        // Rimuove solo i tuoi css login
+        scene.getStylesheets().removeIf(s ->
+                s.contains("login-dark.css") ||
+                s.contains("login.css")
+        );
+
+        String css;
+
+        if (UserPreferences.THEME_DARK.equals(prefs.getTheme())) {
+            css = "/css/login-dark.css";
+        } else {
+            css = "/css/login.css";
+        }
+
+        scene.getStylesheets().add(
+            getClass().getResource(css).toExternalForm()
+        );
     }
 }

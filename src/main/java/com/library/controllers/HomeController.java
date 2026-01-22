@@ -17,6 +17,7 @@ import com.library.models.Book;
 import com.library.models.LibAccess;
 import com.library.models.LibUser;
 import com.library.models.Libraries;
+import com.library.models.UserPreferences;
 import com.library.observers.LibraryObserver;
 import com.library.observers.LibrarySubject;
 import com.library.utils.RepositoryManager;
@@ -35,8 +36,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -98,6 +101,13 @@ public class HomeController implements LibraryObserver {
     @FXML
     private MenuItem databaseSettingsMenuItem;
 
+    @FXML private RadioMenuItem lightThemeItem;
+    @FXML private RadioMenuItem darkThemeItem;
+
+    @FXML private RadioMenuItem smallCardItem;
+    @FXML private RadioMenuItem mediumCardItem;
+    @FXML private RadioMenuItem largeCardItem;
+
     @FXML
     private javafx.scene.control.SeparatorMenuItem adminSeparator;
 
@@ -126,6 +136,9 @@ public class HomeController implements LibraryObserver {
 
     private String selectedSort = "NONE";
     private String activeFilterType = "NONE";
+
+    private final ToggleGroup themeGroup = new ToggleGroup();
+    private final ToggleGroup cardSizeGroup = new ToggleGroup();
 
     @FXML
     public void initialize() {
@@ -164,6 +177,7 @@ public class HomeController implements LibraryObserver {
         setupSort();
         setupFilter();
         setupClearButton();
+        setupCustomizeMenu();
         
         // Registra questo controller come observer
         librarySubject.addObserver(this);
@@ -1355,6 +1369,7 @@ public class HomeController implements LibraryObserver {
         setupAdminFeatures();
         loadLibraries();
         setupLibrarySelection();
+        applyTheme(); // Applica il tema salvato
     }
 
     private void loadLibraries() {
@@ -1450,33 +1465,32 @@ public class HomeController implements LibraryObserver {
     }
     
     private VBox createBookCard(Book book) {
+        UserPreferences prefs = new UserPreferences();
+        UserPreferences.CardDimensions dims = prefs.getCardDimensions();
+        
         VBox card = new VBox(8);
         card.setAlignment(Pos.CENTER);
-        card.setPrefWidth(150);
+        card.setPrefWidth(dims.getWidth());
         card.setCursor(Cursor.HAND);
 
-        // ----- COVER STACK -----
-
         StackPane coverPane = new StackPane();
-        coverPane.setPrefSize(150, 200);
+        coverPane.setPrefSize(dims.getWidth(), dims.getHeight());
 
         Region bookCover = new Region();
-        bookCover.setPrefSize(150, 200);
+        bookCover.setPrefSize(dims.getWidth(), dims.getHeight());
         bookCover.getStyleClass().add("book-cover");
 
         Label titleLabel = new Label(book.getTitle());
         titleLabel.setWrapText(true);
-        titleLabel.setMaxWidth(130);
+        titleLabel.setMaxWidth(dims.getWidth() - 20);
         titleLabel.setAlignment(Pos.CENTER);
         titleLabel.getStyleClass().add("book-title-overlay");
 
         StackPane.setAlignment(titleLabel, Pos.CENTER);
-
         coverPane.getChildren().addAll(bookCover, titleLabel);
-
         card.getChildren().add(coverPane);
 
-        // CLICK OPEN BOOK
+        // Click handler
         card.setOnMouseClicked(e -> {
             if (book.getFilePath() != null) {
                 String userBasePath = currentUser != null ? currentUser.getChosenPath() : null;
@@ -1484,13 +1498,131 @@ public class HomeController implements LibraryObserver {
             }
         });
 
-        // HOVER EFFECT
-        card.setOnMouseEntered(e -> card.getStyleClass().add("book-hover"));
-        card.setOnMouseExited(e -> card.getStyleClass().remove("book-hover"));
-
         card.getStyleClass().add("book-card");
-
         return card;
+    }
+
+    private void updateVisibleCards() {
+        UserPreferences prefs = new UserPreferences();
+        UserPreferences.CardDimensions dims = prefs.getCardDimensions();
+
+        contentArea.lookupAll(".book-card").forEach(node -> {
+
+            VBox card = (VBox) node;
+
+            // Card container
+            card.setPrefWidth(dims.getWidth());
+
+            // Cover area
+            StackPane coverPane = (StackPane) card.getChildren().get(0);
+            coverPane.setPrefSize(dims.getWidth(), dims.getHeight());
+
+            // Book cover region
+            Region cover = (Region) coverPane.getChildren().get(0);
+            cover.setPrefSize(dims.getWidth(), dims.getHeight());
+
+            // Title overlay
+            Label title = (Label) coverPane.getChildren().get(1);
+            title.setMaxWidth(dims.getWidth() - 20);
+        });
+    }
+
+    private void setupCustomizeMenu() {
+        // GROUPS
+        lightThemeItem.setToggleGroup(themeGroup);
+        darkThemeItem.setToggleGroup(themeGroup);
+
+        smallCardItem.setToggleGroup(cardSizeGroup);
+        mediumCardItem.setToggleGroup(cardSizeGroup);
+        largeCardItem.setToggleGroup(cardSizeGroup);
+
+        // LOAD SAVED STATE
+        loadPreferencesIntoMenu();
+
+        // LISTENERS
+        setupCustomizeListeners();
+    }
+
+    private void loadPreferencesIntoMenu() {
+        UserPreferences prefs = new UserPreferences();
+
+        // TEMA
+        if (UserPreferences.THEME_DARK.equals(prefs.getTheme())) {
+            darkThemeItem.setSelected(true);
+        } else {
+            lightThemeItem.setSelected(true);
+        }
+
+        // CARD SIZE
+        switch (prefs.getCardSize()) {
+
+            case UserPreferences.SIZE_SMALL:
+                smallCardItem.setSelected(true);
+                break;
+
+            case UserPreferences.SIZE_LARGE:
+                largeCardItem.setSelected(true);
+                break;
+
+            default:
+                mediumCardItem.setSelected(true);
+        }
+    }
+
+    private void setupCustomizeListeners() {
+        // ===== THEME =====
+        themeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+
+            if (newVal == null) return;
+
+            UserPreferences prefs = new UserPreferences();
+
+            if (newVal == darkThemeItem) {
+                prefs.setTheme(UserPreferences.THEME_DARK);
+                applyTheme();
+            } else {
+                prefs.setTheme(UserPreferences.THEME_LIGHT);
+                applyTheme();
+            }
+        });
+
+        // ===== CARD SIZE =====
+        cardSizeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+
+            if (newVal == null) return;
+
+            UserPreferences prefs = new UserPreferences();
+
+            if (newVal == smallCardItem) {
+                prefs.setCardSize(UserPreferences.SIZE_SMALL);
+            } 
+            else if (newVal == largeCardItem) {
+                prefs.setCardSize(UserPreferences.SIZE_LARGE);
+            } 
+            else {
+                prefs.setCardSize(UserPreferences.SIZE_MEDIUM);
+            }
+
+            updateVisibleCards();
+        });
+    }
+
+    private void applyTheme() {
+        UserPreferences prefs = new UserPreferences();
+        Scene scene = contentArea.getScene();
+        
+        if (scene != null) {
+            scene.getStylesheets().clear();
+            
+            String theme = prefs.getTheme();
+            if (UserPreferences.THEME_DARK.equals(theme)) {
+                scene.getStylesheets().add(
+                    getClass().getResource("/css/main-dark.css").toExternalForm());
+            } else {
+                scene.getStylesheets().add(
+                    getClass().getResource("/css/main.css").toExternalForm());
+            }
+        }
     }
 
     private void showDefaultMessage() {

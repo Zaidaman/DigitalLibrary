@@ -1,0 +1,254 @@
+/* ===========================
+   DARK THEME
+   =========================== */
+
+/* ROOT & BACKGROUND */
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-background-color: #1a1a1a;
+}
+
+/* MENU BAR */
+.menu-bar {
+    -fx-background-color: #2d2d2d;
+}
+
+.menu-bar > .container > .menu-button > .label,
+.menu-bar .menu > .label {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 14px;
+}
+
+.menu-bar .context-menu {
+    -fx-background-color: #2d2d2d;
+}
+
+.menu-bar .context-menu .label {
+    -fx-text-fill: #e0e0e0;
+}
+
+.menu-bar .menu:hover {
+    -fx-background-color: #3d3d3d;
+}
+
+/* DIALOG PANES */
+.dialog-pane {
+    -fx-background-color: #2d2d2d;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #e0e0e0 !important;
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .text-field,
+.dialog-pane .password-field,
+.dialog-pane .combo-box {
+    -fx-text-fill: #e0e0e0;
+    -fx-background-color: #3d3d3d;
+    -fx-prompt-text-fill: #888888;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white !important;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #3498db;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: #252525;
+}
+
+.dialog-pane > .header-panel > .label {
+    -fx-text-fill: #e0e0e0 !important;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+/* SIDEBAR */
+.vbox {
+    -fx-background-color: #2d2d2d;
+}
+
+.vbox > .label {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 18px;
+}
+
+/* LIST VIEW */
+.list-view {
+    -fx-background-color: #2d2d2d;
+}
+
+.list-cell {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: #e0e0e0;
+}
+
+.list-cell:hover {
+    -fx-background-color: #3d3d3d;
+}
+
+.list-cell:selected {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+}
+
+/* CONTENT AREA */
+#contentArea {
+    -fx-background-color: #252525;
+    -fx-padding: 10;
+}
+
+/* BOOK CARD */
+.book-card {
+    -fx-background-radius: 10;
+    -fx-background-color: #2d2d2d;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 3);
+    -fx-padding: 5;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
+.book-card:hover {
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 12, 0, 0, 5);
+}
+
+/* BOOK COVER */
+.book-cover {
+    -fx-background-color: linear-gradient(to bottom, #2980b9, #1f618d);
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #444444;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 3);
+}
+
+/* BOOK TITLE OVERLAY */
+.book-title-overlay {
+    -fx-background-color: rgba(45,45,45,0.95);
+    -fx-padding: 6 8;
+    -fx-background-radius: 6;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e0e0e0;
+    -fx-text-alignment: center;
+}
+
+.book-card:hover .book-cover {
+    -fx-background-color: linear-gradient(to bottom, #3498db, #2980b9);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 16, 0, 0, 5);
+}
+
+/* FILTER BAR */
+#filterBar {
+    -fx-padding: 10;
+    -fx-spacing: 10;
+    -fx-background-color: #2d2d2d;
+}
+
+#filterBar .label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #e0e0e0;
+}
+
+#filterBar .combo-box {
+    -fx-font-size: 13px;
+    -fx-background-color: #3d3d3d;
+}
+
+#filterBar .combo-box .list-cell {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #e0e0e0;
+}
+
+#filterBar .menu-button {
+    -fx-font-size: 13px;
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #e0e0e0;
+}
+
+/* BUTTONS */
+.button {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #3498db;
+}
+
+/* SCROLL PANE */
+.scroll-pane {
+    -fx-background-color: #1a1a1a;
+    -fx-padding: 5;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #1a1a1a;
+}
+
+.scroll-bar {
+    -fx-background-color: #2d2d2d;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #555555;
+    -fx-background-radius: 5;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #666666;
+}
+
+/* TEXTAREAS */
+.text-area {
+    -fx-font-family: 'Courier New', monospace;
+    -fx-font-size: 14px;
+    -fx-control-inner-background: #2d2d2d;
+    -fx-text-fill: #e0e0e0;
+}
+
+.text-area .content {
+    -fx-background-color: #2d2d2d;
+}
+
+/* LABELS */
+.label {
+    -fx-text-fill: #e0e0e0;
+}
+
+.label.error {
+    -fx-text-fill: #e74c3c;
+    -fx-font-size: 14px;
+    -fx-padding: 10;
+}
+
+.label.default-message {
+    -fx-font-size: 20px;
+    -fx-text-fill: #e0e0e0;
+}
+
+/* CHOICE DIALOG */
+.choice-dialog .dialog-pane {
+    -fx-background-color: #2d2d2d;
+}
+
+.choice-dialog .combo-box {
+    -fx-background-color: #3d3d3d;
+}
+
+/* TEXT INPUT DIALOG */
+.text-input-dialog .text-field {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #e0e0e0;
+}

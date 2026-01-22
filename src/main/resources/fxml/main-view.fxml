@@ -30,6 +30,20 @@
                 <MenuItem fx:id="editBookMenuItem" text="Modifica Libro" />
                 <MenuItem fx:id="removeBookFromLibraryMenuItem" text="Rimuovi Libro dalla Libreria" />
             </Menu>
+            <Menu text="Personalizza">
+                <!-- TEMA -->
+                <Menu text="Tema">
+                    <RadioMenuItem fx:id="lightThemeItem" text="Chiaro"/>
+                    <RadioMenuItem fx:id="darkThemeItem" text="Scuro"/>
+                </Menu>
+
+                <!-- CARD SIZE -->
+                <Menu text="Dimensione Card">
+                    <RadioMenuItem fx:id="smallCardItem" text="Piccole"/>
+                    <RadioMenuItem fx:id="mediumCardItem" text="Medie"/>
+                    <RadioMenuItem fx:id="largeCardItem" text="Grandi"/>
+                </Menu>
+            </Menu>
         </MenuBar>
     </top>
 
@@ -61,7 +75,7 @@
             </HBox>
             
             <!-- Area contenuto -->
-            <StackPane fx:id="contentArea" style="-fx-padding: 10; -fx-background-color: white;" VBox.vgrow="ALWAYS">
+            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS">
                 <Label text="Benvenuto nella tua Libreria Digitale!"
                        style="-fx-font-size: 20px;"/>
             </StackPane>
