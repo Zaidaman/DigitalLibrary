@@ -13,15 +13,60 @@
     -fx-background-color: #34495e;
 }
 
-.menu-bar .label, 
-.menu-bar .menu-button, 
-.menu-bar .menu-item {
+.menu-bar > .container > .menu-button > .label,
+.menu-bar .menu > .label {
     -fx-text-fill: white;
     -fx-font-size: 14px;
 }
 
+.menu-bar .context-menu {
+    -fx-background-color: #34495e;
+}
+
+.menu-bar .context-menu .label {
+    -fx-text-fill: white;
+}
+
 .menu-bar .menu:hover {
     -fx-background-color: #2c3e50;
+}
+
+/* ===========================
+   DIALOG PANES
+   =========================== */
+.dialog-pane {
+    -fx-background-color: white;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #2c3e50 !important;
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .text-field,
+.dialog-pane .password-field,
+.dialog-pane .combo-box {
+    -fx-text-fill: #2c3e50;
+    -fx-prompt-text-fill: #95a5a6;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white !important;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #5dade2;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: #ecf0f1;
+}
+
+.dialog-pane > .header-panel > .label {
+    -fx-text-fill: #2c3e50 !important;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
 }
 
 /* ===========================
@@ -54,7 +99,6 @@
     -fx-padding: 5;
     -fx-alignment: center;
     -fx-cursor: hand;
-    -fx-transition: all 0.2s ease-in-out;
 }
 
 .book-card:hover {
@@ -88,7 +132,6 @@
     -fx-text-alignment: center;
 }
 
-/* HOVER EFFECT DELLA COPERTINA */
 .book-card:hover .book-cover {
     -fx-background-color: linear-gradient(to bottom, #5dade2, #3498db);
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.45), 16, 0, 0, 5);

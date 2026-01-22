@@ -129,7 +129,7 @@ public class HomeController implements LibraryObserver {
 
     @FXML
     public void initialize() {
-        /* if (contentArea.getScene() != null) {
+        if (contentArea.getScene() != null) {
             contentArea.getScene().getStylesheets().add(
                 getClass().getResource("/css/main.css").toExternalForm()
            );
@@ -142,7 +142,7 @@ public class HomeController implements LibraryObserver {
                     );
                 }
             });
-        } */
+        }
         
         // L'inizializzazione vera avviene dopo che l'utente è stato settato
         // (tramite setUser)
