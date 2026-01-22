@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17"
+      fx:controller="com.library.controllers.DatabaseSettingsController"
+      spacing="15"
+      style="-fx-padding: 20; -fx-background-color: #ecf0f1;">
+
+    <Label text="Configurazione Database MySQL"
+           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+    <Separator/>
+
+    <!-- Informazioni -->
+    <VBox spacing="5" style="-fx-background-color: #d5dbdb; -fx-padding: 10; -fx-background-radius: 5;">
+        <Label text="⚠️ ATTENZIONE" style="-fx-font-weight: bold;"/>
+        <Label text="Modifica queste impostazioni solo se sai cosa stai facendo."
+               wrapText="true"/>
+        <Label text="Dopo aver salvato, RIAVVIA l'applicazione per applicare le modifiche."
+               wrapText="true" style="-fx-font-weight: bold;"/>
+    </VBox>
+
+    <!-- Campo URL -->
+    <VBox spacing="5">
+        <Label text="URL Database:" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="urlField" 
+                   promptText="jdbc:mysql://localhost:3306/digitallibrary"
+                   style="-fx-pref-width: 400;"/>
+        <Label text="Esempio: jdbc:mysql://localhost:3306/nome_database"
+               style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d;"/>
+    </VBox>
+
+    <!-- Campo Username -->
+    <VBox spacing="5">
+        <Label text="Username:" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="usernameField" 
+                   promptText="root"
+                   style="-fx-pref-width: 400;"/>
+    </VBox>
+
+    <!-- Campo Password -->
+    <VBox spacing="5">
+        <Label text="Password:" style="-fx-font-weight: bold;"/>
+        <PasswordField fx:id="passwordField" 
+                       promptText="password"
+                       style="-fx-pref-width: 400;"/>
+    </VBox>
+
+    <Separator/>
+
+    <!-- Pulsanti -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="resetButton" 
+                text="Ripristina Default"
+                style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-padding: 8 15;"/>
+        <Button fx:id="cancelButton" 
+                text="Annulla"
+                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-padding: 8 15;"/>
+        <Button fx:id="saveButton" 
+                text="Salva"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-padding: 8 15;"/>
+    </HBox>
+
+    <!-- Info configurazione personalizzata -->
+    <VBox spacing="5" style="-fx-background-color: #d6eaf8; -fx-padding: 10; -fx-background-radius: 5;">
+        <Label text="ℹ️ Info" style="-fx-font-weight: bold;"/>
+        <Label text="La configurazione personalizzata viene salvata nella directory home dell'utente:"
+               wrapText="true" style="-fx-font-size: 11px;"/>
+        <Label text="Windows: %USERPROFILE%\.digitallibrary\db.properties"
+               wrapText="true" style="-fx-font-size: 11px; -fx-font-family: monospace;"/>
+        <Label text="Linux/Mac: ~/.digitallibrary/db.properties"
+               wrapText="true" style="-fx-font-size: 11px; -fx-font-family: monospace;"/>
+    </VBox>
+
+</VBox>

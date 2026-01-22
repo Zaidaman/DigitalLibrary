@@ -96,6 +96,9 @@ public class HomeController implements LibraryObserver {
     private MenuItem deleteBookFromRepoMenuItem;
 
     @FXML
+    private MenuItem databaseSettingsMenuItem;
+
+    @FXML
     private javafx.scene.control.SeparatorMenuItem adminSeparator;
 
     @FXML
@@ -154,6 +157,7 @@ public class HomeController implements LibraryObserver {
         setupAddGenreMenuItem();
         setupEditUserMenuItem();
         setupDeleteUserMenuItem();
+        setupDatabaseSettingsMenuItem();
         setupDeleteBookFromRepoMenuItem();
         setupLogoutMenuItem();
         showDefaultMessage();
@@ -935,6 +939,9 @@ public class HomeController implements LibraryObserver {
             if (deleteBookFromRepoMenuItem != null) {
                 deleteBookFromRepoMenuItem.setVisible(true);
             }
+            if (databaseSettingsMenuItem != null) {
+                databaseSettingsMenuItem.setVisible(true);
+            }
             if (adminSeparator != null) {
                 adminSeparator.setVisible(true);
             }
@@ -1029,6 +1036,32 @@ public class HomeController implements LibraryObserver {
                         }
                     }
                 });
+            });
+        }
+    }
+
+    private void setupDatabaseSettingsMenuItem() {
+        if (databaseSettingsMenuItem != null) {
+            databaseSettingsMenuItem.setOnAction(e -> {
+                if (currentUser == null || !currentUser.isAdmin()) {
+                    showAlert("Accesso Negato", "Solo gli amministratori possono modificare le impostazioni del database.");
+                    return;
+                }
+
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/database-settings-view.fxml"));
+                    Parent root = loader.load();
+                    
+                    Stage stage = new Stage();
+                    stage.setTitle("Configurazione Database");
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.setScene(new Scene(root));
+                    stage.setResizable(false);
+                    stage.showAndWait();
+                } catch (IOException ex) {
+                    showAlert("Errore", "Impossibile aprire la finestra delle impostazioni: " + ex.getMessage());
+                    System.err.println("Errore apertura configurazione DB: " + ex.getMessage());
+                }
             });
         }
     }

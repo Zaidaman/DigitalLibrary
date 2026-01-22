@@ -14,6 +14,7 @@
                 <MenuItem fx:id="addAuthorMenuItem" text="Aggiungi Autore" />
                 <MenuItem fx:id="addGenreMenuItem" text="Aggiungi Genere" />
                 <SeparatorMenuItem fx:id="adminSeparator" visible="false" />
+                <MenuItem fx:id="databaseSettingsMenuItem" text="[ADMIN] Configurazione Database" visible="false" />
                 <MenuItem fx:id="deleteUserMenuItem" text="[ADMIN] Elimina Utente" visible="false" />
                 <MenuItem fx:id="deleteBookFromRepoMenuItem" text="[ADMIN] Elimina Libro da Repository" visible="false" />
                 <MenuItem fx:id="logoutMenuItem" text="Logout" />
