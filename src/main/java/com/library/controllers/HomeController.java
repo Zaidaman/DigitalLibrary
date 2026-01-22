@@ -542,17 +542,60 @@ public class HomeController implements LibraryObserver {
                         javafx.scene.control.Alert.AlertType.CONFIRMATION);
                     confirmAlert.setTitle("Conferma Rimozione");
                     confirmAlert.setHeaderText("Rimuovere \"" + bookTitle + "\"?");
-                    confirmAlert.setContentText("Il libro verrà rimosso solo da questa libreria, non dal database.");
+                    confirmAlert.setContentText("Il libro verrà rimosso da questa libreria e dalla tua cartella locale se presente.");
                     
                     Optional<javafx.scene.control.ButtonType> confirmResult = confirmAlert.showAndWait();
                     if (confirmResult.isPresent() && confirmResult.get() == javafx.scene.control.ButtonType.OK) {
                         int idBook = bookDAO.findIdByTitle(bookTitle);
                         if (idBook != -1) {
-                            BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
-                            bookLibDAO.deleteByBookAndLibrary(idBook, library.getIdLibrary());
-                            showAlert("Successo", "Libro rimosso dalla libreria!");
-                            // Ricarica i libri della libreria
-                            loadBooksForLibrary(selectedLibrary);
+                            try {
+                                // Trova il libro per ottenere il percorso del file
+                                Book bookToRemove = booksInLibrary.stream()
+                                    .filter(b -> b.getTitle().equals(bookTitle))
+                                    .findFirst()
+                                    .orElse(null);
+                                
+                                boolean fileDeleted = false;
+                                
+                                // Elimina il file dalla cartella locale dell'utente corrente
+                                if (bookToRemove != null && currentUser != null) {
+                                    String filePath = bookToRemove.getFilePath();
+                                    if (filePath != null && !filePath.isEmpty()) {
+                                        String userChosenPath = currentUser.getChosenPath();
+                                        if (userChosenPath == null || userChosenPath.trim().isEmpty()) {
+                                            userChosenPath = System.getProperty("user.home") + java.io.File.separator + "DigitalLibrary";
+                                        }
+                                        
+                                        // Costruisci il percorso del file nella cartella dell'utente
+                                        String userFilePath = userChosenPath + java.io.File.separator + filePath;
+                                        java.io.File userFile = new java.io.File(userFilePath);
+                                        
+                                        if (userFile.exists()) {
+                                            fileDeleted = userFile.delete();
+                                            if (fileDeleted) {
+                                                System.out.println("File eliminato dalla cartella locale: " + userFilePath);
+                                            } else {
+                                                System.err.println("Impossibile eliminare il file dalla cartella locale: " + userFilePath);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // Rimuovi il libro dalla libreria nel database
+                                BookLibDAO bookLibDAO = DAOFactory.getInstance().getBookLibDAO();
+                                bookLibDAO.deleteByBookAndLibrary(idBook, library.getIdLibrary());
+                                
+                                String message = "Libro rimosso dalla libreria!";
+                                if (fileDeleted) {
+                                    message += "\nFile eliminato dalla tua cartella locale.";
+                                }
+                                showAlert("Successo", message);
+                                
+                                // Ricarica i libri della libreria
+                                loadBooksForLibrary(selectedLibrary);
+                            } catch (Exception ex) {
+                                showAlert("Errore", "Errore durante la rimozione: " + ex.getMessage());
+                            }
                         }
                     }
                 });
