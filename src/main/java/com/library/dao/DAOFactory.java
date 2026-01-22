@@ -17,6 +17,7 @@ public class DAOFactory {
     private final BookLibDAO bookLibDAO;
     private final BookGenreDAO bookGenreDAO;
     private final LibAccessDAO libAccessDAO;
+    private final BookAccessDAO bookAccessDAO;
     
     /**
      * Costruttore privato per impedire istanziazione esterna
@@ -30,6 +31,7 @@ public class DAOFactory {
         this.bookLibDAO = new BookLibDAO();
         this.bookGenreDAO = new BookGenreDAO();
         this.libAccessDAO = new LibAccessDAO();
+        this.bookAccessDAO = new BookAccessDAO();
     }
     
     /**
@@ -53,4 +55,5 @@ public class DAOFactory {
     public BookLibDAO getBookLibDAO() { return bookLibDAO; }
     public BookGenreDAO getBookGenreDAO() { return bookGenreDAO; }
     public LibAccessDAO getLibAccessDAO() { return libAccessDAO; }
+    public BookAccessDAO getBookAccessDAO() { return bookAccessDAO; }
 }

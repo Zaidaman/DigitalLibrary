@@ -58,3 +58,11 @@ IdLibrary int not null,
 foreign key(IdUser) references LibUser(IdUser),
 foreign key(IdLibrary) references Libraries(IdLibrary)
 );
+
+create table if not exists BookAccess(
+IdBook int not null,
+IdUser int not null,
+primary key(IdBook, IdUser),
+foreign key(IdBook) references Book(IdBook),
+foreign key(IdUser) references LibUser(IdUser)
+);
