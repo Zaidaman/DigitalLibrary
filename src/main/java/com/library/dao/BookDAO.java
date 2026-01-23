@@ -27,7 +27,6 @@ import nl.siegmann.epublib.epub.EpubReader;
  */
 public class BookDAO implements BaseDAO<Book> {
 
-    // Inserisce un nuovo libro nel DB con percorso file e restituisce l'id generato
     public int insert(Book book, int idAuthor, int annoPub) {
         String sql = "INSERT INTO Book (Title, IdAuthor, AnnoPub, BookFile) VALUES (?, ?, ?, ?)";
         try (Connection conn = DbUtils.getConnection();
@@ -49,20 +48,13 @@ public class BookDAO implements BaseDAO<Book> {
         return -1;
     }
     
-    /**
-     * Implementazione base di insert per conformità a BaseDAO.
-     * Usa valori di default per idAuthor e annoPub.
-     */
     @Override
     public int insert(Book book) {
-        // Implementazione semplificata che richiama il metodo completo
         return insert(book, -1, 0);
     }
 
-    // Carica EPUB dentro WebView
     public void loadEpubInWebView(String epubFilePath, WebView webView) {
         try {
-            // QUI usiamo il nome COMPLETO per evitare conflitti
             nl.siegmann.epublib.domain.Book epub =
                     new EpubReader().readEpub(new FileInputStream(epubFilePath));
 

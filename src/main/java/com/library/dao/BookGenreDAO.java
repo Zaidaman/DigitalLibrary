@@ -58,7 +58,6 @@ public class BookGenreDAO {
     }
     
     public void updateGenreForBook(int idBook, int newIdGenre) {
-        // Elimina le vecchie associazioni
         String deleteSql = "DELETE FROM BookGenre WHERE IdBook = ?";
         try (Connection conn = DbUtils.getConnection();
              java.sql.PreparedStatement ps = conn.prepareStatement(deleteSql)) {
@@ -68,7 +67,6 @@ public class BookGenreDAO {
             throw new RuntimeException(e);
         }
         
-        // Inserisci la nuova associazione
         String insertSql = "INSERT INTO BookGenre (IdBook, IdGenre) VALUES (?, ?)";
         try (Connection conn = DbUtils.getConnection();
              java.sql.PreparedStatement ps = conn.prepareStatement(insertSql)) {

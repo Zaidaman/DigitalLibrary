@@ -36,7 +36,6 @@ public class LoginController {
     @FXML
     @SuppressWarnings("unused")
     private void initialize() {
-        // Imposta il bottone di login come default (si attiva premendo Enter)
         loginButton.setDefaultButton(true);
         applySavedTheme();
     }

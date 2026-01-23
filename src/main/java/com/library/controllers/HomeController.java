@@ -147,7 +147,6 @@ public class HomeController implements LibraryObserver {
                 getClass().getResource("/css/main.css").toExternalForm()
            );
         } else {
-            // Se la scena non è ancora pronta, posticipa
             contentArea.sceneProperty().addListener((obs, oldScene, newScene) -> {
                 if (newScene != null) {
                     newScene.getStylesheets().add(
@@ -157,8 +156,6 @@ public class HomeController implements LibraryObserver {
             });
         }
         
-        // L'inizializzazione vera avviene dopo che l'utente è stato settato
-        // (tramite setUser)
         setupAddLibraryMenuItem();
         setupShareLibraryMenuItem();
         setupDeleteLibraryMenuItem();
@@ -179,7 +176,6 @@ public class HomeController implements LibraryObserver {
         setupClearButton();
         setupCustomizeMenu();
         
-        // Registra questo controller come observer
         librarySubject.addObserver(this);
     }
 
@@ -190,7 +186,6 @@ public class HomeController implements LibraryObserver {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add-book-view.fxml"));
                     Parent root = loader.load();
                     
-                    // Passa l'utente corrente al controller
                     AddBookController controller = loader.getController();
                     controller.setUser(currentUser);
                     

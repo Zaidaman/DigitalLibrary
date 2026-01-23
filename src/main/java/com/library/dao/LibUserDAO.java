@@ -101,7 +101,7 @@ public class LibUserDAO {
         }
         
         if (updates.isEmpty()) {
-            return false; // Nessun campo da aggiornare
+            return false;
         }
         
         sql.append(String.join(", ", updates));

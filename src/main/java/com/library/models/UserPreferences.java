@@ -8,11 +8,9 @@ public class UserPreferences {
     private static final String PREFERENCES_FILE = "user-preferences.properties";
     private Properties properties;
     
-    // Chiavi delle preferenze
     public static final String THEME = "theme";
     public static final String CARD_SIZE = "card.size";
     
-    // Valori predefiniti
     public static final String THEME_LIGHT = "light";
     public static final String THEME_DARK = "dark";
     public static final String SIZE_SMALL = "small";

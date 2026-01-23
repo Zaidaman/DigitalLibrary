@@ -34,10 +34,8 @@ public class DatabaseSettingsController {
 
     @FXML
     public void initialize() {
-        // Carica le impostazioni correnti
         loadCurrentSettings();
         
-        // Setup dei pulsanti
         saveButton.setOnAction(event -> handleSave());
         resetButton.setOnAction(event -> handleReset());
         cancelButton.setOnAction(event -> handleCancel());

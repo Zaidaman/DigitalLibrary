@@ -13,7 +13,6 @@ public class Main extends Application {
         Scene scene = new Scene(loader.load(), 400, 350);
         stage.setTitle("Login - Digital Library");
 
-        // Carica il tema salvato nelle preferenze
         UserPreferences prefs = new UserPreferences();
         String cssFile = UserPreferences.THEME_DARK.equals(prefs.getTheme()) 
             ? "/css/login-dark.css" 

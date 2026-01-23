@@ -29,10 +29,8 @@ public class AddGenreController {
             new GenreDAO().insert(genre);
             this.createdGenre = genre;
             
-            // Mostra notifica di successo
             showNotification("Genere aggiunto con successo!");
             
-            // Chiudi dopo un breve delay
             new Thread(() -> {
                 try {
                     Thread.sleep(1500);
@@ -42,7 +40,6 @@ public class AddGenreController {
                 }
             }).start();
         } else {
-            // Mostra errore se il campo è vuoto
             genreNameField.setStyle("-fx-border-color: red;");
         }
     }

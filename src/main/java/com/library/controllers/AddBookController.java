@@ -53,11 +53,9 @@ public class AddBookController {
     @FXML
     @SuppressWarnings("unused")
     private void initialize() {
-        // Inizializza i ContextMenu
         authorContextMenu = new ContextMenu();
         genreContextMenu = new ContextMenu();
         
-        // Property Binding: disabilita saveBookBtn se i campi obbligatori sono vuoti
         saveBookBtn.disableProperty().bind(
             titleField.textProperty().isEmpty()
             .or(authorField.textProperty().isEmpty())
@@ -72,12 +70,10 @@ public class AddBookController {
         addGenreBtn.setOnAction(e -> openAddGenreDialog());
         saveBookBtn.setOnAction(e -> saveBook());
         
-        // Mostra suggerimenti quando il campo autore riceve il focus
         authorField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (isNowFocused) {
                 suggestAuthors(authorField.getText());
             } else {
-                // Nascondi menu quando perde il focus (con un piccolo delay)
                 javafx.application.Platform.runLater(() -> {
                     if (!authorContextMenu.isShowing()) {
                         authorContextMenu.hide();
@@ -86,12 +82,10 @@ public class AddBookController {
             }
         });
         
-        // Mostra suggerimenti quando il campo genere riceve il focus
         genreField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (isNowFocused) {
                 suggestGenres(genreField.getText());
             } else {
-                // Nascondi menu quando perde il focus (con un piccolo delay)
                 javafx.application.Platform.runLater(() -> {
                     if (!genreContextMenu.isShowing()) {
                         genreContextMenu.hide();

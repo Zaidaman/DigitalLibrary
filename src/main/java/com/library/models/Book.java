@@ -1,18 +1,12 @@
 package com.library.models;
 
-/**
- * Classe che rappresenta un libro nel sistema.
- * Utilizza il Builder Pattern per una costruzione flessibile.
- */
 public class Book {
-    // Rimossa variabile non usata IdBook
     private final String Title;
     private final String Author;
     private final String Genre;
     private final String filePath;
     private final int IdLibrary;
 
-    // Costruttore pubblico mantenuto per retrocompatibilità
     public Book(String title, String author, String genre, String filePath, int idLibrary) {
         this.Title = title;
         this.Author = author;
@@ -21,7 +15,6 @@ public class Book {
         this.IdLibrary = idLibrary;
     }
 
-    // Costruttore privato usato dal Builder
     private Book(Builder builder) {
         this.Title = builder.title;
         this.Author = builder.author;

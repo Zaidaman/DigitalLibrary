@@ -46,7 +46,6 @@ public class DAOFactory {
         return instance;
     }
     
-    // Getters per i vari DAO
     public AuthorDAO getAuthorDAO() { return authorDAO; }
     public BookDAO getBookDAO() { return bookDAO; }
     public GenreDAO getGenreDAO() { return genreDAO; }

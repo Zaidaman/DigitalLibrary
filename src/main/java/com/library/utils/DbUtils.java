@@ -7,7 +7,6 @@ import java.util.Properties;
 
 public class DbUtils {
     public static Connection getConnection() throws SQLException {
-        // Usa il ConfigurationManager per caricare le proprietà
         Properties props = ConfigurationManager.loadDatabaseProperties();
 
         String url = props.getProperty("db.url");

@@ -33,10 +33,8 @@ public class AddAuthorController {
             new AuthorDAO().insert(author);
             this.createdAuthor = author;
             
-            // Mostra notifica di successo
             showNotification("Autore aggiunto con successo!");
             
-            // Chiudi dopo un breve delay
             new Thread(() -> {
                 try {
                     Thread.sleep(1500);
