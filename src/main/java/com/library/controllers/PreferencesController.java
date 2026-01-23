@@ -1,23 +1,20 @@
 package com.library.controllers;
 
 import com.library.models.UserPreferences;
+
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
 import javafx.stage.Stage;
 
 public class PreferencesController {
 
     @FXML
-    private ToggleGroup themeGroup;
-    
-    @FXML
     private RadioButton lightThemeRadio;
     
     @FXML
     private RadioButton darkThemeRadio;
-    
-    @FXML
-    private ToggleGroup cardSizeGroup;
     
     @FXML
     private RadioButton smallCardRadio;

@@ -1555,17 +1555,9 @@ public class HomeController implements LibraryObserver {
 
         // CARD SIZE
         switch (prefs.getCardSize()) {
-
-            case UserPreferences.SIZE_SMALL:
-                smallCardItem.setSelected(true);
-                break;
-
-            case UserPreferences.SIZE_LARGE:
-                largeCardItem.setSelected(true);
-                break;
-
-            default:
-                mediumCardItem.setSelected(true);
+            case UserPreferences.SIZE_SMALL -> smallCardItem.setSelected(true);
+            case UserPreferences.SIZE_LARGE -> largeCardItem.setSelected(true);
+            default -> mediumCardItem.setSelected(true);
         }
     }
 

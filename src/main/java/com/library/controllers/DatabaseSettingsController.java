@@ -77,8 +77,10 @@ public class DatabaseSettingsController {
             
             showAlert(Alert.AlertType.INFORMATION, 
                      "Successo", 
-                     "Configurazione salvata con successo!\n\n" +
-                     "IMPORTANTE: Riavvia l'applicazione per applicare le modifiche.");
+                     """
+                     Configurazione salvata con successo!
+                     
+                     IMPORTANTE: Riavvia l'applicazione per applicare le modifiche.""");
             
             closeWindow();
         } catch (IOException e) {
@@ -93,8 +95,9 @@ public class DatabaseSettingsController {
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Conferma Reset");
         confirmAlert.setHeaderText("Ripristinare configurazione di default?");
-        confirmAlert.setContentText("Questa operazione eliminerà la configurazione personalizzata.\n" +
-                                    "Riavvia l'applicazione dopo il reset.");
+        confirmAlert.setContentText("""
+                Questa operazione eliminerà la configurazione personalizzata.
+                Riavvia l'applicazione dopo il reset.""");
 
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
@@ -102,8 +105,9 @@ public class DatabaseSettingsController {
                     ConfigurationManager.resetToDefault();
                     showAlert(Alert.AlertType.INFORMATION, 
                              "Reset completato", 
-                             "Configurazione ripristinata ai valori di default.\n" +
-                             "Riavvia l'applicazione per applicare le modifiche.");
+                             """
+                             Configurazione ripristinata ai valori di default.
+                             Riavvia l'applicazione per applicare le modifiche.""");
                     closeWindow();
                 } catch (IOException e) {
                     showAlert(Alert.AlertType.ERROR, 

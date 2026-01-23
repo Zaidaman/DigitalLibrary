@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Gestisce il repository centrale dei file condivisi e i percorsi delle cartelle personali degli utenti.
  * 
@@ -15,6 +18,7 @@ import java.nio.file.StandardCopyOption;
  */
 public class RepositoryManager {
     
+    private static final Logger logger = LoggerFactory.getLogger(RepositoryManager.class);
     private static final String APP_NAME = "DigitalLibrary";
     private static final String REPOSITORY_FOLDER = "repository";
     
@@ -155,7 +159,7 @@ public class RepositoryManager {
                 try {
                     return copyToUserFolder(relativeFilePath, userBasePath);
                 } catch (IOException e) {
-                    System.err.println("Warning: Could not copy file to user folder: " + e.getMessage());
+                    logger.warn("Could not copy file to user folder: {}", e.getMessage());
                     // Restituisci comunque il percorso centrale
                     return centralFilePath;
                 }
@@ -164,7 +168,7 @@ public class RepositoryManager {
         }
         
         // 3. File non trovato
-        System.err.println("File not found: " + relativeFilePath);
+        logger.error("File not found: {}", relativeFilePath);
         return null;
     }
     
@@ -219,9 +223,9 @@ public class RepositoryManager {
         if (!dir.exists()) {
             boolean created = dir.mkdirs();
             if (created) {
-                System.out.println("[RepositoryManager] Created directory: " + path);
+                logger.info("Created directory: {}", path);
             } else {
-                System.err.println("[RepositoryManager] Warning: Could not create directory at: " + path);
+                logger.warn("Could not create directory at: {}", path);
             }
         }
     }
@@ -234,15 +238,15 @@ public class RepositoryManager {
         File repoDir = new File(centralRepositoryPath);
         
         if (!repoDir.exists()) {
-            System.out.println("========================================");
-            System.out.println("Digital Library - First Time Setup");
-            System.out.println("========================================");
-            System.out.println("Creating central repository at: " + centralRepositoryPath);
+            logger.info("========================================");
+            logger.info("Digital Library - First Time Setup");
+            logger.info("========================================");
+            logger.info("Creating central repository at: {}", centralRepositoryPath);
             
             boolean created = repoDir.mkdirs();
             
             if (created) {
-                System.out.println("[OK] Central repository created successfully!");
+                logger.info("[OK] Central repository created successfully!");
                 
                 // Crea le sottocartelle standard
                 createStandardSubfolders();
@@ -252,22 +256,22 @@ public class RepositoryManager {
                     configureWindowsPermissions();
                 }
                 
-                System.out.println("========================================");
-                System.out.println("Setup completed successfully!");
-                System.out.println("========================================");
+                logger.info("========================================");
+                logger.info("Setup completed successfully!");
+                logger.info("========================================");
             } else {
                 // Se non riusciamo a creare in modalità production, prova fallback
                 if (isProduction) {
-                    System.err.println("[WARNING] Could not create repository in system location.");
+                    logger.warn("Could not create repository in system location.");
                     handleProductionFallback();
                 } else {
-                    System.err.println("[ERROR] Could not create repository at: " + centralRepositoryPath);
+                    logger.error("Could not create repository at: {}", centralRepositoryPath);
                 }
             }
         } else {
             // Repository già esistente - verifica le sottocartelle
             createStandardSubfolders();
-            System.out.println("[RepositoryManager] Using existing repository at: " + centralRepositoryPath);
+            logger.info("Using existing repository at: {}", centralRepositoryPath);
         }
     }
     
@@ -299,13 +303,13 @@ public class RepositoryManager {
             int exitCode = process.waitFor();
             
             if (exitCode == 0) {
-                System.out.println("[OK] Windows permissions configured successfully");
+                logger.info("[OK] Windows permissions configured successfully");
             } else {
-                System.out.println("[INFO] Could not configure permissions automatically (may require admin rights)");
+                logger.info("Could not configure permissions automatically (may require admin rights)");
             }
         } catch (IOException | InterruptedException e) {
             // Permessi non configurati - non è critico, continua comunque
-            System.out.println("[INFO] Permissions configuration skipped: " + e.getMessage());
+            logger.info("Permissions configuration skipped: {}", e.getMessage());
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
@@ -317,7 +321,7 @@ public class RepositoryManager {
      * il repository nella posizione di sistema.
      */
     private void handleProductionFallback() {
-        System.out.println("[INFO] Attempting fallback to user home directory...");
+        logger.info("Attempting fallback to user home directory...");
         
         // Fallback: usa la home directory dell'utente
         String userHome = System.getProperty("user.home");
@@ -325,13 +329,13 @@ public class RepositoryManager {
         
         File fallbackDir = new File(fallbackPath);
         if (fallbackDir.mkdirs() || fallbackDir.exists()) {
-            System.out.println("[OK] Using fallback repository at: " + fallbackPath);
+            logger.info("[OK] Using fallback repository at: {}", fallbackPath);
             // Aggiorna il percorso del repository
             this.centralRepositoryPath = fallbackPath;
             createStandardSubfolders();
         } else {
-            System.err.println("[ERROR] Could not create repository even in fallback location!");
-            System.err.println("[ERROR] Please check file system permissions.");
+            logger.error("Could not create repository even in fallback location!");
+            logger.error("Please check file system permissions.");
         }
     }
     
@@ -367,13 +371,13 @@ public class RepositoryManager {
         
         // Verifica se la cartella library-data esiste
         if (!libraryDataDir.exists() || !libraryDataDir.isDirectory()) {
-            System.out.println("[RepositoryManager] library-data not found, skipping sync.");
+            logger.info("library-data not found, skipping sync.");
             return;
         }
         
-        System.out.println("========================================");
-        System.out.println("Syncing files from library-data...");
-        System.out.println("========================================");
+        logger.info("========================================");
+        logger.info("Syncing files from library-data...");
+        logger.info("========================================");
         
         int copiedCount = 0;
         int skippedCount = 0;
@@ -403,7 +407,7 @@ public class RepositoryManager {
                 
                 // Verifica se il file esiste già nel repository centrale
                 if (existsInRepository(relativeFilePath)) {
-                    System.out.println("[SKIP] " + relativeFilePath + " (already exists)");
+                    logger.info("[SKIP] {} (already exists)", relativeFilePath);
                     skippedCount++;
                     continue;
                 }
@@ -411,19 +415,19 @@ public class RepositoryManager {
                 // Copia il file nel repository centrale
                 try {
                     String destPath = saveToRepository(file, relativeFilePath);
-                    System.out.println("[COPY] " + relativeFilePath + " -> " + destPath);
+                    logger.info("[COPY] {} -> {}", relativeFilePath, destPath);
                     copiedCount++;
                 } catch (IOException e) {
-                    System.err.println("[ERROR] Failed to copy " + relativeFilePath + ": " + e.getMessage());
+                    logger.error("Failed to copy {}: {}", relativeFilePath, e.getMessage());
                 }
             }
         }
         
-        System.out.println("========================================");
-        System.out.println("Sync completed!");
-        System.out.println("Files copied: " + copiedCount);
-        System.out.println("Files skipped: " + skippedCount);
-        System.out.println("========================================");
+        logger.info("========================================");
+        logger.info("Sync completed!");
+        logger.info("Files copied: {}", copiedCount);
+        logger.info("Files skipped: {}", skippedCount);
+        logger.info("========================================");
     }
     
     /**
@@ -436,7 +440,7 @@ public class RepositoryManager {
         File libraryDataDir = new File("library-data");
         
         if (!libraryDataDir.exists() || !libraryDataDir.isDirectory()) {
-            System.err.println("[RepositoryManager] library-data folder not found.");
+            logger.error("library-data folder not found.");
             return 0;
         }
         
@@ -467,7 +471,7 @@ public class RepositoryManager {
                         saveToRepository(file, relativeFilePath);
                         copiedCount++;
                     } catch (IOException e) {
-                        System.err.println("[ERROR] Failed to copy " + relativeFilePath + ": " + e.getMessage());
+                        logger.error("Failed to copy {}: {}", relativeFilePath, e.getMessage());
                     }
                 }
             }
