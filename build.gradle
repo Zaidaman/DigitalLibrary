@@ -47,3 +47,93 @@ application {
 test {
     useJUnitPlatform()
 }
+
+// Task personalizzato per creare un JAR con tutte le dipendenze (incluso JavaFX)
+task fatJar(type: Jar) {
+    manifest {
+        attributes(
+            'Main-Class': 'com.library.Launcher',
+            'Multi-Release': 'true'
+        )
+    }
+    archiveBaseName = 'DigitalLibrary-standalone'
+    archiveVersion = '1.0.0'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    // Includi anche i file compilati del progetto
+    from sourceSets.main.output
+    
+    // Escludi file di firma che possono causare problemi
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+}
+
+// Task per creare una distribuzione completa
+task dist(type: Copy, dependsOn: fatJar) {
+    from('build/libs') {
+        include 'DigitalLibrary-standalone-*.jar'
+    }
+    into 'build/dist'
+    
+    // Crea script di avvio con module-path corretto per JavaFX
+    doLast {
+        def distDir = file('build/dist')
+        def jarName = 'DigitalLibrary-standalone-1.0.0.jar'
+        
+        // Script Windows con supporto JavaFX (modalità development)
+        def batFile = new File(distDir, 'DigitalLibrary.bat')
+        batFile.text = """@echo off
+REM Launcher per DigitalLibrary con supporto JavaFX
+java -Dprism.order=sw -jar "%~dp0${jarName}"
+"""
+        
+        // Script Windows PRODUCTION
+        def batProdFile = new File(distDir, 'DigitalLibrary-Production.bat')
+        batProdFile.text = """@echo off
+REM Launcher per DigitalLibrary in modalità PRODUCTION
+REM Repository centrale: %ProgramData%\\DigitalLibrary\\repository
+java -Dprism.order=sw -Dapp.production=true -jar "%~dp0${jarName}"
+"""
+        
+        // Script Unix/Linux/Mac con supporto JavaFX (modalità development)
+        def shFile = new File(distDir, 'DigitalLibrary.sh')
+        shFile.text = """#!/bin/bash
+# Launcher per DigitalLibrary con supporto JavaFX
+DIR="\$(cd "\$(dirname "\$0")" && pwd)"
+java -Dprism.order=sw -jar "\$DIR/${jarName}"
+"""
+        shFile.setExecutable(true)
+        
+        // Script Unix/Linux/Mac PRODUCTION
+        def shProdFile = new File(distDir, 'DigitalLibrary-Production.sh')
+        shProdFile.text = """#!/bin/bash
+# Launcher per DigitalLibrary in modalità PRODUCTION
+# Repository centrale: /var/lib/digitallibrary/repository
+DIR="\$(cd "\$(dirname "\$0")" && pwd)"
+java -Dprism.order=sw -Dapp.production=true -jar "\$DIR/${jarName}"
+"""
+        shProdFile.setExecutable(true)
+        
+        println ""
+        println "========================================="
+        println "Distribuzione creata in: build/dist"
+        println "========================================="
+        println "DEVELOPMENT MODE:"
+        println "  Windows: build\\dist\\DigitalLibrary.bat"
+        println "  Linux/Mac: build/dist/DigitalLibrary.sh"
+        println ""
+        println "PRODUCTION MODE:"
+        println "  Windows: build\\dist\\DigitalLibrary-Production.bat"
+        println "  Linux/Mac: build/dist/DigitalLibrary-Production.sh"
+        println ""
+        println "Repository Production:"
+        println "  Windows: %ProgramData%\\DigitalLibrary\\repository"
+        println "  Linux/Mac: /var/lib/digitallibrary/repository"
+        println "========================================="
+    }
+}
