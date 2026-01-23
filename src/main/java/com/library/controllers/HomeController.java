@@ -215,9 +215,8 @@ public class HomeController implements LibraryObserver {
     private void setupAddExistingBookMenuItem() {
         if (addExistingBookMenuItem != null) {
             addExistingBookMenuItem.setOnAction(e -> {
-                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                String selectedLibrary = promptLibrarySelection();
                 if (selectedLibrary == null) {
-                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria prima di aggiungere un libro.");
                     return;
                 }
                 
@@ -313,9 +312,8 @@ public class HomeController implements LibraryObserver {
     private void setupEditBookMenuItem() {
         if (editBookMenuItem != null) {
             editBookMenuItem.setOnAction(e -> {
-                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                String selectedLibrary = promptLibrarySelection();
                 if (selectedLibrary == null) {
-                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria prima di modificare un libro.");
                     return;
                 }
                 
@@ -522,9 +520,8 @@ public class HomeController implements LibraryObserver {
     private void setupRemoveBookFromLibraryMenuItem() {
         if (removeBookFromLibraryMenuItem != null) {
             removeBookFromLibraryMenuItem.setOnAction(e -> {
-                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                String selectedLibrary = promptLibrarySelection();
                 if (selectedLibrary == null) {
-                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria prima di rimuovere un libro.");
                     return;
                 }
                 
@@ -833,9 +830,8 @@ public class HomeController implements LibraryObserver {
     private void setupShareLibraryMenuItem() {
         if (shareLibraryMenuItem != null) {
             shareLibraryMenuItem.setOnAction(e -> {
-                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                String selectedLibrary = promptLibrarySelection();
                 if (selectedLibrary == null) {
-                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria da condividere.");
                     return;
                 }
                 
@@ -894,9 +890,8 @@ public class HomeController implements LibraryObserver {
     private void setupDeleteLibraryMenuItem() {
         if (deleteLibraryMenuItem != null) {
             deleteLibraryMenuItem.setOnAction(e -> {
-                String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+                String selectedLibrary = promptLibrarySelection();
                 if (selectedLibrary == null) {
-                    showAlert("Nessuna libreria selezionata", "Seleziona una libreria da eliminare.");
                     return;
                 }
                 
@@ -1361,6 +1356,41 @@ public class HomeController implements LibraryObserver {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    /**
+     * Mostra un dialog per selezionare una libreria se non ce n'è una già selezionata.
+     * @return Il nome della libreria selezionata, o null se l'operazione viene annullata
+     */
+    private String promptLibrarySelection() {
+        String selectedLibrary = libraryList.getSelectionModel().getSelectedItem();
+        if (selectedLibrary != null) {
+            return selectedLibrary;
+        }
+        
+        // Ottieni tutte le librerie dell'utente
+        List<String> availableLibraries = new ArrayList<>(libraryList.getItems());
+        
+        if (availableLibraries.isEmpty()) {
+            showAlert("Nessuna libreria disponibile", "Crea prima una libreria per utilizzare questa funzione.");
+            return null;
+        }
+        
+        // Mostra dialog di selezione
+        javafx.scene.control.ChoiceDialog<String> dialog = 
+            new javafx.scene.control.ChoiceDialog<>(availableLibraries.get(0), availableLibraries);
+        dialog.setTitle("Seleziona Libreria");
+        dialog.setHeaderText("Nessuna libreria selezionata");
+        dialog.setContentText("Seleziona una libreria:");
+        
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            // Aggiorna la selezione nella lista
+            libraryList.getSelectionModel().select(result.get());
+            return result.get();
+        }
+        
+        return null;
     }
 
     // Metodo per ricevere l'utente loggato
