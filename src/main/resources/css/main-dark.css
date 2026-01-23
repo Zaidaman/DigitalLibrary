@@ -173,6 +173,34 @@
     -fx-text-fill: #e0e0e0;
 }
 
+#filterBar .menu-button > .label {
+    -fx-text-fill: #e0e0e0;
+}
+
+#filterBar .menu-button .arrow-button {
+    -fx-background-color: #3d3d3d;
+}
+
+#filterBar .menu-button .arrow {
+    -fx-background-color: #e0e0e0;
+}
+
+#filterBar .menu-button .context-menu {
+    -fx-background-color: #2d2d2d;
+}
+
+#filterBar .menu-button .menu-item {
+    -fx-background-color: #2d2d2d;
+}
+
+#filterBar .menu-button .menu-item .label {
+    -fx-text-fill: #e0e0e0;
+}
+
+#filterBar .menu-button .menu-item:hover {
+    -fx-background-color: #3d3d3d;
+}
+
 /* BUTTONS */
 .button {
     -fx-background-color: #2980b9;

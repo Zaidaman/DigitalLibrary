@@ -1,4 +1,6 @@
 package com.library;
+import com.library.models.UserPreferences;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -11,8 +13,14 @@ public class Main extends Application {
         Scene scene = new Scene(loader.load(), 400, 350);
         stage.setTitle("Login - Digital Library");
 
+        // Carica il tema salvato nelle preferenze
+        UserPreferences prefs = new UserPreferences();
+        String cssFile = UserPreferences.THEME_DARK.equals(prefs.getTheme()) 
+            ? "/css/login-dark.css" 
+            : "/css/login.css";
+        
         scene.getStylesheets().add(
-            getClass().getResource("/css/login.css").toExternalForm()
+            getClass().getResource(cssFile).toExternalForm()
         );
 
         stage.setScene(scene);
