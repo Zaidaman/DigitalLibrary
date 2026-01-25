@@ -146,7 +146,7 @@ public class LoginController {
             
             Stage stage = (Stage) loginButton.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
-            Scene scene = new Scene(loader.load(), 900, 600);
+            Scene scene = new Scene(loader.load(), 1100, 600);
             // Passa l'utente loggato al controller della home
             HomeController homeController = loader.getController();
             if (homeController != null && loggedUser != null) {
