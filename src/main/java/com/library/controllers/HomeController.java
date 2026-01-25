@@ -129,6 +129,9 @@ public class HomeController implements LibraryObserver {
     @FXML
     private Button clearFiltersBtn;
 
+    @FXML private ComboBox<String> genreFilterCombo;
+    @FXML private ComboBox<String> authorFilterCombo;
+
     private LibUser currentUser;
     private final LibrarySubject librarySubject = new LibrarySubject();
 
@@ -139,6 +142,9 @@ public class HomeController implements LibraryObserver {
 
     private final ToggleGroup themeGroup = new ToggleGroup();
     private final ToggleGroup cardSizeGroup = new ToggleGroup();
+
+    private String activeGenreFilter = "NONE";
+    private String activeAuthorFilter = "NONE";
 
     @FXML
     public void initialize() {
@@ -175,6 +181,7 @@ public class HomeController implements LibraryObserver {
         setupFilter();
         setupClearButton();
         setupCustomizeMenu();
+        setupGenreAuthorFilters();
         
         librarySubject.addObserver(this);
     }
@@ -205,6 +212,20 @@ public class HomeController implements LibraryObserver {
                 }
             });
         }
+    }
+
+    private void setupGenreAuthorFilters() {
+        genreFilterCombo.setOnAction(e -> {
+            String selected = genreFilterCombo.getValue();
+            activeGenreFilter = selected.equals("Tutti") ? "NONE" : selected;
+            applyFiltersAndSort();
+        });
+
+        authorFilterCombo.setOnAction(e -> {
+            String selected = authorFilterCombo.getValue();
+            activeAuthorFilter = selected.equals("Tutti") ? "NONE" : selected;
+            applyFiltersAndSort();
+        });
     }
 
     private void setupAddExistingBookMenuItem() {
@@ -1291,26 +1312,40 @@ public class HomeController implements LibraryObserver {
 
     private void setupClearButton() {
         clearFiltersBtn.setOnAction(e -> {
-                selectedSort = "NONE";
-                activeFilterType = "NONE";
 
-                sortCombo.getSelectionModel().selectFirst();
+            // RESET STATO LOGICO
+            selectedSort = "NONE";
+            activeFilterType = "NONE";
+            activeGenreFilter = "NONE";
+            activeAuthorFilter = "NONE";
 
-                pdfFilterItem.setSelected(false);
-                epubFilterItem.setSelected(false);
-                txtFilterItem.setSelected(false);
+            // RESET UI
+            sortCombo.getSelectionModel().selectFirst();
 
-                filterMenuBtn.setText("Filtra");
+            pdfFilterItem.setSelected(false);
+            epubFilterItem.setSelected(false);
+            txtFilterItem.setSelected(false);
 
-                refreshBooksList(currentLibraryBooks);
-            });
-        }
+            filterMenuBtn.setText("Filtra");
 
-        private void applyFiltersAndSort() {
+            // Reset ComboBox SOLO se non sono vuote
+            if (!genreFilterCombo.getItems().isEmpty()) {
+                genreFilterCombo.setValue("Tutti");
+            }
 
+            if (!authorFilterCombo.getItems().isEmpty()) {
+                authorFilterCombo.setValue("Tutti");
+            }
+
+            // Ricarica lista completa
+            applyFiltersAndSort();
+        });
+    }
+
+    private void applyFiltersAndSort() {
         List<Book> result = new ArrayList<>(currentLibraryBooks);
 
-        // -------- FILTRI --------
+        // -------- FILE TYPE FILTER --------
         result.removeIf(book -> {
             String path = book.getFilePath().toLowerCase();
 
@@ -1318,12 +1353,10 @@ public class HomeController implements LibraryObserver {
                 filterMenuBtn.setText("PDF");
                 return !path.endsWith(".pdf");
             }
-
             if ("EPUB".equals(activeFilterType)) {
                 filterMenuBtn.setText("EPUB");
                 return !path.endsWith(".epub");
             }
-
             if ("TXT".equals(activeFilterType)) {
                 filterMenuBtn.setText("TXT");
                 return !path.endsWith(".txt");
@@ -1331,6 +1364,22 @@ public class HomeController implements LibraryObserver {
 
             return false;
         });
+
+        // -------- GENRE FILTER --------
+        if (!"NONE".equals(activeGenreFilter)) {
+            result.removeIf(book ->
+                book.getGenre() == null ||
+                !book.getGenre().equalsIgnoreCase(activeGenreFilter)
+            );
+        }
+
+        // -------- AUTHOR FILTER --------
+        if (!"NONE".equals(activeAuthorFilter)) {
+            result.removeIf(book ->
+                book.getAuthor() == null ||
+                !book.getAuthor().equalsIgnoreCase(activeAuthorFilter)
+            );
+        }
 
         // -------- SORT --------
         if ("Titolo A → Z".equals(selectedSort)) {
@@ -1453,6 +1502,7 @@ public class HomeController implements LibraryObserver {
 
         // Aggiorna UI
         refreshBooksList(currentLibraryBooks);
+        populateGenreAndAuthorFilters();
 
         // Mostra barra filtri
         filterBar.setVisible(true);
@@ -1488,7 +1538,37 @@ public class HomeController implements LibraryObserver {
 
         contentArea.getChildren().add(scrollPane);
     }
-    
+
+    private void populateGenreAndAuthorFilters() {
+        // -------- GENRE --------
+
+        List<String> genres = currentLibraryBooks.stream()
+                .map(Book::getGenre)
+                .filter(g -> g != null && !g.isBlank())
+                .map(String::trim)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        genreFilterCombo.getItems().clear();
+        genreFilterCombo.getItems().add("Tutti");
+        genreFilterCombo.getItems().addAll(genres);
+
+        // -------- AUTHOR --------
+
+        List<String> authors = currentLibraryBooks.stream()
+                .map(Book::getAuthor)
+                .filter(a -> a != null && !a.isBlank())
+                .map(String::trim)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        authorFilterCombo.getItems().clear();
+        authorFilterCombo.getItems().add("Tutti");
+        authorFilterCombo.getItems().addAll(authors);
+    }
+
     private VBox createBookCard(Book book) {
         UserPreferences prefs = new UserPreferences();
         UserPreferences.CardDimensions dims = prefs.getCardDimensions();

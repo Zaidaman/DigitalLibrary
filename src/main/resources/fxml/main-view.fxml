@@ -71,6 +71,8 @@
                         <CheckMenuItem fx:id="txtFilterItem" text="TXT"/>
                     </items>
                 </MenuButton>
+                <ComboBox fx:id="genreFilterCombo" promptText="Genere"/>
+                <ComboBox fx:id="authorFilterCombo" promptText="Autore"/>
                 <Button fx:id="clearFiltersBtn" text="Reset"/>
             </HBox>
             

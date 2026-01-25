@@ -111,32 +111,46 @@ public class BookDAO implements BaseDAO<Book> {
     // Restituisce libri per libreria
     public List<Book> findByLibraryId(int idLibrary) {
         List<Book> books = new ArrayList<>();
+
         String sql =
-                "SELECT b.IdBook, b.Title, b.IdAuthor, b.AnnoPub, b.BookFile " +
-                "FROM Book b " +
-                "JOIN BookLib bl ON b.IdBook = bl.IdBook " +
-                "WHERE bl.IdLibrary = ?";
+            "SELECT b.IdBook, b.Title, b.BookFile, " +
+            "a.AuthorName, a.MidName, a.Surname, " +
+            "GROUP_CONCAT(g.GenreName SEPARATOR ', ') AS Genres " +
+            "FROM Book b " +
+            "JOIN BookLib bl ON b.IdBook = bl.IdBook " +
+            "LEFT JOIN Author a ON b.IdAuthor = a.IdAuthor " +
+            "LEFT JOIN BookGenre bg ON b.IdBook = bg.IdBook " +
+            "LEFT JOIN Genre g ON bg.IdGenre = g.IdGenre " +
+            "WHERE bl.IdLibrary = ? " +
+            "GROUP BY b.IdBook";
 
         try (Connection conn = DbUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, idLibrary);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+
+                String author = rs.getString("AuthorName") + " " +
+                        (rs.getString("MidName") != null ? rs.getString("MidName") + " " : "") +
+                        rs.getString("Surname");
+
                 Book book = new Book(
                         rs.getString("Title"),
-                        null,
-                        null,
+                        author.trim(),
+                        rs.getString("Genres"),
                         rs.getString("BookFile"),
                         idLibrary
                 );
+
                 books.add(book);
             }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         return books;
     }
 
