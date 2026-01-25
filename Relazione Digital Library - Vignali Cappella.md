@@ -2,7 +2,7 @@
 _Filippo Cappella_: filippo.cappella@studio.unibo.it
 _Luca Vignali_: luca.vignali7@studio.unibo.it
 ### Obiettivo
-Digital Libray è un'applicazione per la gestione dei libri digitali, l'applicazione presenta varie funzioni di gestione delle libreria, dei libri e degli utenti che ne usufruiscono, tutto ciò con una grafica semplice e accattivante.
+Digital Library è un'applicazione per la gestione dei libri digitali, l'applicazione presenta varie funzioni di gestione delle libreria, dei libri e degli utenti che ne usufruiscono, tutto ciò con una grafica semplice e accattivante.
 
 Qui di seguito sono elencati i requisiti del nostro applicativo:
 - Caricamento file di varie estensioni ( PDF, txt, epub )
@@ -23,63 +23,61 @@ Challenge Principali:
 
 Digital Library dovrà essere in grado di creare, condividere e eliminare le varie librerie dell'utente, le librerie sono costituite da un insieme di libri associati alla suddetta libreria.
 L'utente dev'essere in grado di accedere alla libreria e caricare i propri libri ad essa.
-L'applicativo dovrà essere in gradi di salvare i vari libri all'interno della repository locale e creare un'istanza del libro nel database.
+L'applicativo dovrà essere in grado di salvare i vari libri all'interno della repository locale e creare un'istanza del libro nel database.
 Durante la fase di caricamento dei libri l'applicativo dovrà essere in grado di recuperare i dati del genere e dell'autore, dando all'utente la possibilità di aggiungerne di nuovi.
 L'applicativo inoltre permetterà la gestione di funzioni admin, funzioni avanzate per la gestione dell'utenza e della libreria.
 L'utente potrà gestire i propri dati direttamente dall'applicativo.
 
+Le entità principali del dominio e le loro relazioni sono rappresentate nel seguente diagramma delle classi:
+
 ```mermaid
-flowchart LR
+classDiagram
+    class LibUser {
+        +String username
+        +String password
+        +boolean firstLogin
+        +boolean isAdmin
+        +String chosenPath
+    }
 
-    %% Attori
-    User((Utente))
-    Admin((Admin))
+    class Libraries {
+        +String libraryName
+    }
 
-    %% Sistema
-    subgraph DigitalLibrary["Digital Library System"]
+    class Book {
+        +String title
+        +int yearOfPublication
+        +String bookFile
+    }
 
-        UC1[Creare Libreria]
-        UC2[Condividere Libreria]
-        UC3[Eliminare Libreria]
-        UC4[Accedere alla Libreria]
+    class Author {
+        +String authorName
+        +String middleName
+        +String surname
+    }
 
-        UC5[Caricare Libro]
-        UC6[Salvare Libro in Repository Locale]
-        UC7[Creare Istanza Libro nel Database]
+    class Genre {
+        +String genreName
+    }
 
-        UC8[Recuperare Autore]
-        UC9[Recuperare Genere]
-        UC10[Aggiungere Autore]
-        UC11[Aggiungere Genere]
+    class LibAccess {
+        +int accessLevel
+    }
 
-        UC12[Gestione Utenti]
-        UC13[Gestione Librerie Avanzata]
-
-        UC14[Gestione Dati Personali]
-
-    end
-
-    %% Relazioni Utente
-    User --> UC1
-    User --> UC2
-    User --> UC3
-    User --> UC4
-    User --> UC5
-    User --> UC14
-
-    %% Relazioni Upload Libro
-    UC5 --> UC6
-    UC5 --> UC7
-    UC5 --> UC8
-    UC5 --> UC9
-    UC8 --> UC10
-    UC9 --> UC11
-
-    %% Relazioni Admin
-    Admin --> UC12
-    Admin --> UC13
-    Admin --> UC4
+    LibUser "1" --> "*" Libraries : owns
+    LibUser "*" --> "*" Libraries : accesses via
+    LibUser "*" -- "*" Libraries : (LibAccess)
+    Libraries "1" --> "*" Book : contains
+    Book "*" --> "1" Author : written by
+    Book "*" --> "*" Genre : categorized by
 ```
+
+Il modello del dominio evidenzia le seguenti relazioni chiave:
+- Un **LibUser** può possedere multiple **Libraries** (relazione uno-a-molti)
+- Un utente può accedere a librerie condivise da altri utenti tramite **LibAccess** (relazione molti-a-molti)
+- Ogni **Libraries** contiene molteplici **Book** (relazione uno-a-molti)
+- Ogni **Book** è scritto da un singolo **Author** (relazione molti-a-uno)
+- Un **Book** può appartenere a più **Genre** e viceversa (relazione molti-a-molti)
 ### Architettura
 L'applicativo è sviluppato con un'architettura a strati (Layered Architecture) combinata con il pattern MVC (Model-View-Controller).
 
@@ -302,6 +300,25 @@ classDiagram
 - Facilità di manutenzione del codice
 - Possibilità di cambiare database senza modificare i Controller
 - Migliore testabilità delle componenti
+
+## Sviluppo
+### Testing Automatizzato
+
+Per garantire la qualità del codice e prevenire regressioni, è stata implementata una suite di test automatizzati utilizzando **JUnit 5** (Jupiter). Il testing si è concentrato sui componenti critici dell'applicazione, in particolare quelli che gestiscono la persistenza e la configurazione del sistema.
+
+#### Componenti testati
+
+**RepositoryManager** (`com.library.utils.RepositoryManagerTest`)  
+Il componente responsabile della gestione del repository centralizzato è stato sottoposto a test automatizzati per verificare:
+- Corretta inizializzazione dell'istanza Singleton
+- Creazione automatica del repository centrale e delle sottocartelle (pdf, epub, txt)
+- Validità dei percorsi generati
+- Funzionamento dei metodi di utilità per verificare l'esistenza di file nel repository
+
+I test verificano che il sistema sia in grado di configurarsi correttamente sia in modalità Development che Production, garantendo che tutte le directory necessarie vengano create automaticamente al primo avvio.
+
+La suite di test è completamente automatica e può essere eseguita tramite Gradle con il comando `./gradlew test`. Tutti i test devono passare con successo prima di considerare una build stabile.
+
 ### Note di Sviluppo
 #### Estrazione pagine Epub
 Dove: src.main.java.com.library.strategies.EpubDisplayStrategy
@@ -450,3 +467,12 @@ Un altro punto di forza è stata la gestione dei file PDF, grazie alla libreria 
 Inoltre mi sono occupato della grafica e personalizzazione, al momento l'utente può cambiare il tema e la grandezza delle "card" dei libri, in futuro altre opzioni di personalizzazione si potrebbero applicare, come la gestione delle cover delle "card" dei libri o una maggiore personalizzazione delle librerie.
 Una pecca nella personalizzazione è la parziale applicazione del tema scuro, purtroppo non mi è stato possibile applicare il tema alle pagine dei reader o alle altre finestre di dialogo, inoltre uno stile più moderno alla parte grafica avrebbe di sicuro migliorato la User Experience.
 In conclusione, Digital Library è stato un progetto che mi ha interessato molto e che di sicuro presenta del potenziale e, nonostante i difetti e le sue mancanze, può comunque stimolare l'interesse degli utenti.
+
+#### Vignali Luca
+Il mio compito è stato quello di lavorare sull'architettura del backend e sulla gestione dei dati e dei collegamenti. 
+Inizialmente ho lavorato alla progettazione del DB Mysql, definendone la struttura e le varie relazioni tra gli elementi; durante la scrittura del programma ho ritoccato i vari elementi per aggiungere funzionalità utili al programma. All'utente è data anche la possibilità di hostare il proprio DB tramite ConfigurationManager.
+Per permettere al programma di interfacciarsi con questo DB ho realizzato dei DAO che gestissero la logica e l'utilizzo di un DAOFactory con pattern Singleton assicura una istanza unica e centrallizata per la gestione di tutti i DAO.
+Per migliorare la flessibilità del programma ho realizzato un RepositoryManager, che gestisce in automatico la creazione di una Repository centrale dove gli utenti possono salvare i propri libri, differenziando tra la modalità Development e la modalità Production, gestendo i permessi necessari e implementando fallback in caso di problemi.
+Per permettere agli utenti di gestire i vari dati durante l'esperienza ho inserito varie impostazioni come l'aggiunta di Autori, Generi, la condivisione delle librerie ad altri utenti, l'aggiunta e la modifica di libri.
+Una delle sfide principali è stata garantire una gestione dei permessi Windows tramite icacls e compatibilità dei percorsi file system, soprattutto del RepositoryManager. In futuro sarebbe interessante implementare un sistema di sincronizzazione con il cloud e un layer di caching con Redis per ottimizzare query ripetitive. Retrospettivamente avrei dedicato più tempo ai test dei DAO e a implementare un sistema di migration del database per semplificare gli aggiornamenti dello schema.
+Nonostante questo sono soddisfatto dell'architettura modulare realizzata, che fornisce basi solide per future evoluzioni e mi ha permesso di approfondire pattern e sistemi della programmazione in Java. 
