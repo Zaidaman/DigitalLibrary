@@ -442,3 +442,11 @@ private void suggestAuthors(String query) {
 ```
 Sistema di Autocomplete per autori e generi
 ### Commenti Finali
+#### Filippo Cappella
+Digital Library è un progetto con un grande potenziale, durante lo sviluppo mi sono sempre più accorto delle possibilità future e degli ampliamenti per rendere il nostro applicativo completo, moderno e interessante per vari utenti.
+Il mio compito è stato principalmente quello della lettura dei file, l'applicativo al momento legge i file PDF, TXT e EPUB, quest'ultimo è stato il reader che ha richiesto maggiore sviluppo per lo spacchettamento del file, la lettura dei contenuti e la navigazione dei contenuti.
+La mia idea iniziale era quella di permettere all'applicativo di leggere tutti i file di testo, o almeno i più usati, come il DOCX o EXCEL, ma purtroppo non mi è stato possibile per via della complessità dei vari file.
+Un altro punto di forza è stata la gestione dei file PDF, grazie alla libreria ICEPDF ho potuto integrare un ottimo reader con una toolbar, dando la possibilità all'utente di visionare il file PDF a suo piacimento.
+Inoltre mi sono occupato della grafica e personalizzazione, al momento l'utente può cambiare il tema e la grandezza delle "card" dei libri, in futuro altre opzioni di personalizzazione si potrebbero applicare, come la gestione delle cover delle "card" dei libri o una maggiore personalizzazione delle librerie.
+Una pecca nella personalizzazione è la parziale applicazione del tema scuro, purtroppo non mi è stato possibile applicare il tema alle pagine dei reader o alle altre finestre di dialogo, inoltre uno stile più moderno alla parte grafica avrebbe di sicuro migliorato la User Experience.
+In conclusione, Digital Library è stato un progetto che mi ha interessato molto e che di sicuro presenta del potenziale e, nonostante i difetti e le sue mancanze, può comunque stimolare l'interesse degli utenti.
